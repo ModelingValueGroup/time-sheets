@@ -1,0 +1,28 @@
+name: build
+on: [ push, workflow_dispatch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      xGITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
+      xALLREP_TOKEN: "${{secrets.ALLREP_TOKEN}}"
+    steps:
+
+      #### prepare #####################################################################################################
+      - name: "checkout"
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: "setup JDK"
+        uses: actions/setup-java@v2
+        with:
+          java-version: 16
+          distribution: zulu
+
+      #### build ######################################################################################################
+      - name: "try"
+        run:  |
+          ant -f "time-sheets.xml" -Djdk.home.16="$JAVA_HOME"
+          java -jar "out/artifacts/time_sheets_jar/time-sheets.jar"

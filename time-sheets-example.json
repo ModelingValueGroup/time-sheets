@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://example.atlassian.net",
+    "username": "example@example.com",
+    "apiToken": "***example***",
+    "projects": [
+      {
+        "namePattern": "pr[123]",
+        "users": [
+          "user1",
+          "user2",
+          "user3"
+        ]
+      },
+      {
+        "namePattern": "pr[456]",
+        "users": [
+          "userA",
+          "userB",
+          "userC"
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://example2.atlassian.net",
+    "username": "example2@example.com",
+    "apiToken": "***example2***",
+    "projects": [
+      {
+        "keyPattern": "XYZ.",
+        "users": [
+          "user1"
+        ]
+      }
+    ]
+  }
+]
