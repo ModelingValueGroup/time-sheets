@@ -19,6 +19,7 @@ jobs:
         with:
           repository: "ModelingValueGroup/time-sheets-mvg"
           token: "${{secrets.ALLREP_TOKEN}}"
+          path: "time-sheets-mvg"
 
       - name: "try"
         run: |
