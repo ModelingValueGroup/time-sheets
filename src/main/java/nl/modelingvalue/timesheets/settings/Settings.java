@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -22,11 +21,7 @@ public class Settings {
         try {
             Type listType = new TypeToken<ArrayList<JiraBucket>>() {
             }.getType();
-            Gson gson = new GsonBuilder()
-                    //                .registerTypeAdapter(IssueBean.class, new IssueBeanDeserializer())
-                    //                .registerTypeAdapter(MetaBean.class, new MetaBeanDeserializer())
-                    .create();
-            return gson.fromJson(new JsonReader(Files.newBufferedReader(f)), listType);
+            return new GsonBuilder().create().fromJson(new JsonReader(Files.newBufferedReader(f)), listType);
         } catch (IOException e) {
             throw new Error("can not read " + f.toAbsolutePath(), e);
         }
@@ -41,7 +36,12 @@ public class Settings {
             }
         }
         if (!Files.isRegularFile(found)) {
-            throw new Error("file " + TIME_SHEETS_JSON + " not found (in current dir or as -p <f> in args)");
+            Path alt = Paths.get("..").resolve(found);
+            if (Files.isRegularFile(alt)) {
+                found = alt;
+            } else {
+                throw new Error("file " + TIME_SHEETS_JSON + " not found (in current dir or as -p <f> in args)");
+            }
         }
         return found;
     }
