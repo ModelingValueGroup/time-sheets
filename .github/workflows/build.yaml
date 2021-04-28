@@ -17,7 +17,8 @@ jobs:
       - name: "checkout"
         uses: actions/checkout@v2
         with:
-          url: "https://github.com/ModelingValueGroup/time-sheets-mvg.git"
+          repository: "https://github.com/ModelingValueGroup/time-sheets-mvg.git"
+          token: "${{secrets.ALLREP_TOKEN}}"
 
       - name: "try"
         run: |
