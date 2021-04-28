@@ -5,8 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      xGITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
-      xALLREP_TOKEN: "${{secrets.ALLREP_TOKEN}}"
+      ALLREP_TOKEN: "${{secrets.ALLREP_TOKEN}}"
     steps:
 
       #### prepare #####################################################################################################
@@ -24,5 +23,4 @@ jobs:
       #### build ######################################################################################################
       - name: "try"
         run:  |
-          ant -f "time-sheets.xml" -Djdk.home.16="$JAVA_HOME"
-          java -jar "out/artifacts/time_sheets_jar/time-sheets.jar"
+          ./gradlew build
