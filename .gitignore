@@ -1,3 +1,4 @@
-/lib/
 /out/
+/build/
+/.gradle/
 /mvg-time-sheets.json
