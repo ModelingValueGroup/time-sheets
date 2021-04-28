@@ -36,7 +36,7 @@ public class Settings {
             }
         }
         if (!Files.isRegularFile(found)) {
-            Path alt = Paths.get("..").resolve(found);
+            Path alt = Paths.get("..","time-sheets-mvg").resolve(found);
             if (Files.isRegularFile(alt)) {
                 found = alt;
             } else {

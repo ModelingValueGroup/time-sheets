@@ -14,6 +14,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: "checkout"
+        uses: actions/checkout@v2
+        with:
+          url: "https://github.com/ModelingValueGroup/time-sheets-mvg.git"
+
+      - name: "try"
+        run: |
+          ls -l
+          ls -l *
+
       - name: "setup JDK"
         uses: actions/setup-java@v2
         with:
@@ -21,6 +31,6 @@ jobs:
           distribution: zulu
 
       #### build ######################################################################################################
-      - name: "try"
+      - name: "build"
         run:  |
           ./gradlew build
