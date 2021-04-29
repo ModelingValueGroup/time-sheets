@@ -21,11 +21,6 @@ jobs:
           token: "${{secrets.ALLREP_TOKEN}}"
           path: "time-sheets-mvg"
 
-      - name: "try"
-        run: |
-          ls -l
-          ls -l *
-
       - name: "setup JDK"
         uses: actions/setup-java@v2
         with:
@@ -35,4 +30,5 @@ jobs:
       #### build ######################################################################################################
       - name: "build"
         run:  |
-          ./gradlew build
+          echo '${{secrets.TIMESHEET_REPO_JSON}}' > "/tmp/time-sheets-years.json"
+          ./gradlew --scan build

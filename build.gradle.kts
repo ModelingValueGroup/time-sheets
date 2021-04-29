@@ -28,3 +28,18 @@ java {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+if (gradle.startParameter.isBuildScan()) {
+    println("TOMOMTOM ")
+    gradleEnterprise {
+        buildScan {
+            termsOfServiceUrl = "https://gradle.com/terms-of-service"
+            termsOfServiceAgree = "yes"
+            publishAlways()
+        }
+    }
+}
+
+tasks.withType<Test> {
+    testLogging.showStandardStreams = true
+}

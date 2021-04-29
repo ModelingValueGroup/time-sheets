@@ -48,6 +48,7 @@ public class Harvester {
                 .filter(j -> !j.ignore)
                 .map(r -> new Harvester(r, settings.yearsMap))
                 .toList();
+
         Future<?> futureOverall = POOL.submit(() -> {
                     Stream<Harvester> harvestersStream = harvesters.stream();
                     executeInParallel(harvestersStream, h -> {
@@ -58,9 +59,9 @@ public class Harvester {
                             List<ProjectBucket> projectBuckets = h.findProjectBuckets(p);
                             executeInParallel(h.getIssuesStream(p), i -> {
                                 Stream<WorkEntryBean> workEntriesStream = h.getWorkEntries(p, i);
-                                executeInParallel(workEntriesStream, w -> {
-                                    projectBuckets.stream().filter(pb->pb.year==w.getStartedDate().getYear()).findFirst().ifPresent(projectBucket-> timeadmin.add(new WorkInfo(h.repoBucket, projectBucket, p, i, w)));
-                                });
+                                executeInParallel(workEntriesStream, w ->
+                                        projectBuckets.stream().filter(pb -> pb.year == w.getStartedDate().getYear()).findFirst().ifPresent(projectBucket -> timeadmin.add(new WorkInfo(h.repoBucket, projectBucket, p, i, w)))
+                                );
                             });
                             System.err.printf("... %20.3f sec for %s\n", (System.currentTimeMillis() - t0) / 1000.0, p.getName());
                         });
