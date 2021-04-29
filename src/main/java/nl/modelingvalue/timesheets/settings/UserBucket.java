@@ -27,7 +27,7 @@ public class UserBucket {
         if (ignore) {
             return false;
         }
-        return displayName == null || displayNamePat.matcher(ab.getDisplayName()).matches();
+        return displayNamePat.matcher(ab.getDisplayName()).matches() || displayNamePat.matcher(ab.getName()).matches();
     }
 
     public boolean isCatchAll() {
