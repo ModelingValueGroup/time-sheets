@@ -40,6 +40,9 @@ jobs:
           tar xf ../build/distributions/time-sheets.tar
           "time-sheets/bin/time-sheets" -r "time-sheets-years.json" -y "mvg-time-sheets.json"
           rm -rf time-sheets
+
+          git config --global user.email "automation@modelingvalue.nl"
+          git config --global user.name "Automation through Actions"
           git add timesheet-*.html
           git commit -m "new timesheets @$(date)"
           git push
