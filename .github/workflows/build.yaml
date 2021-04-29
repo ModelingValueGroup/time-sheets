@@ -39,5 +39,5 @@ jobs:
           echo '${{secrets.TIMESHEET_REPO_JSON}}' > "/tmp/time-sheets-years.json"
           tar xf ../build/distributions/time-sheets.tar
           find .
-          "time-sheets/bin/time-sheets" -r "/tmp/time-sheets-years.json" -y "time-sheets-mvg/mvg-time-sheets.json"
+          "time-sheets/bin/time-sheets" -r "/tmp/time-sheets-years.json" -y "mvg-time-sheets.json"
           find .
