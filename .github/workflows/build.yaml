@@ -31,4 +31,4 @@ jobs:
       - name: "build"
         run:  |
           echo '${{secrets.TIMESHEET_REPO_JSON}}' > "/tmp/time-sheets-years.json"
-          ./gradlew --scan build
+          ./gradlew --stacktrace --scan build
