@@ -10,24 +10,27 @@ import de.micromata.jira.rest.core.domain.WorkEntryBean;
 import nl.modelingvalue.timesheets.util.U;
 
 public class ProjectBucket {
-    public boolean                 ignore;
-    public String                  repoName;
-    public String                  projectName;
-    public String                  projectKey;
-    public long                    budget;
-    public Map<String, UserBucket> userBuckets;
-
-    public  int     year;
-    public  String  name;
-    private Pattern repoNamePat;
-    private Pattern projectNamePat;
-    private Pattern projectKeyPat;
+    public  boolean                 ignore;
+    public  String                  repoName;
+    public  String                  projectName;
+    public  String                  projectKey;
+    public  long                    budget;
+    public  Map<String, UserBucket> userBuckets;
+    //
+    public  int                     year;
+    public  String                  name;
+    //
+    private Pattern                 namePat;
+    private Pattern                 repoNamePat;
+    private Pattern                 projectNamePat;
+    private Pattern                 projectKeyPat;
 
     public void init(int year, String name) {
         this.year = year;
         this.name = name;
-        if (projectName == null && projectKey == null) {
-            projectName = name;
+
+        if (namePat == null) {
+            namePat = U.cachePattern(name);
         }
         if (repoNamePat == null) {
             repoNamePat = U.cachePattern(repoName);
@@ -45,9 +48,13 @@ public class ProjectBucket {
         if (ignore) {
             return false;
         }
-        return (repoName == null || repoNamePat.matcher(repo.name).matches())
-                && (projectName == null || projectNamePat.matcher(pb.getName()).matches())
-                && (projectKey == null || projectKeyPat.matcher(pb.getKey()).matches());
+        if (projectName == null && projectKey == null) {
+            return namePat.matcher(pb.getName()).matches()
+                    || namePat.matcher(pb.getKey()).matches();
+        }
+        return repoNamePat.matcher(repo.name).matches()
+                && projectNamePat.matcher(pb.getName()).matches()
+                && projectKeyPat.matcher(pb.getKey()).matches();
     }
 
     public UserBucket findUserBucket(WorkEntryBean workEntryBean) {

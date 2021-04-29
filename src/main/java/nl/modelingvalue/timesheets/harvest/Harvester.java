@@ -104,9 +104,13 @@ public class Harvester {
             if (TRACE) {
                 System.err.println(Thread.currentThread().getName() + "  - >>> projects  -  " + repoBucket.name);
             }
-            CompletableFuture<List<ProjectBean>> allProjectsFuture   = jiraRestClient.getProjectClient().getAllProjects();
-            List<ProjectBean>                    projectBeans        = waitFor(allProjectsFuture);
-            List<ProjectBean>                    enabledProjectBeans = projectBeans.stream().filter(p -> yearsMap.values().stream().flatMap(y -> y.values().stream()).anyMatch(pb -> pb.isMatch(repoBucket, p))).toList();
+            CompletableFuture<List<ProjectBean>> allProjectsFuture = jiraRestClient.getProjectClient().getAllProjects();
+            List<ProjectBean>                    projectBeans      = waitFor(allProjectsFuture);
+            List<ProjectBean> enabledProjectBeans = projectBeans.stream()
+                    .filter(p -> yearsMap.values().stream()
+                            .flatMap(y -> y.values().stream())
+                            .anyMatch(pb -> pb.isMatch(repoBucket, p)))
+                    .toList();
             yielder.yieldz(enabledProjectBeans);
             if (TRACE) {
                 System.err.println(Thread.currentThread().getName() + "  - ............... found " + enabledProjectBeans.size() + " projects in " + repoBucket.name);
