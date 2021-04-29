@@ -1,13 +1,13 @@
 <#import "subs.ftl" as subs>
 <html>
 <head>
-    <title>${projectName} timesheets ${year}</title>
+    <title>${name} timesheets ${year}</title>
     <@subs.css/>
 </head>
 <body>
 <table cellspacing='0'>
     <tr>
-        <td colspan=18 class=center>${projectName} timesheets ${year} (generated@${now}).</td>
+        <td colspan=18 class=center>${name} timesheets ${year} (generated@${now}).</td>
     </tr>
     <tr>
         <td colspan=2 class=center>

@@ -14,15 +14,19 @@ import nl.modelingvalue.timesheets.util.FreeMarkerEngine;
 
 public class SheetGenerator {
     public static void generate(Settings settings, TimeAdminModel timeadmin, String fileNameTemplate) {
+        System.err.println("generating to " + Paths.get(".").toAbsolutePath());
         settings.yearsMap.values().forEach(yearbucket -> {
             int          year         = yearbucket.year;
             YearModel    yearModel    = timeadmin.yearMap.get(year);
-            List<String> projectNames = yearbucket.values().stream().map(pb -> pb.projectName).distinct().toList();
+            List<String> projectNames = yearbucket.values().stream().map(pb -> pb.name).distinct().toList();
             projectNames.forEach(projectName -> {
                 ProjectModel projectModel = yearModel.projectMap.get(projectName);
-                String       page         = new FreeMarkerEngine().process("nl/modelingvalue/timesheets/timesheet.html.ftl", projectModel);
-                Path         outputFile   = Paths.get(String.format(fileNameTemplate, year, projectName));
-                write(page, outputFile);
+                if (projectModel != null) {
+                    String page       = new FreeMarkerEngine().process("nl/modelingvalue/timesheets/timesheet.html.ftl", projectModel);
+                    Path   outputFile = Paths.get(String.format(fileNameTemplate, year, projectName));
+                    write(page, outputFile);
+                    System.err.println("    " + outputFile.toAbsolutePath());
+                }
             });
         });
     }
