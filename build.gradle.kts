@@ -30,7 +30,6 @@ tasks.withType<Test>().configureEach {
 }
 
 if (gradle.startParameter.isBuildScan()) {
-    println("TOMOMTOM ")
     gradleEnterprise {
         buildScan {
             termsOfServiceUrl = "https://gradle.com/terms-of-service"

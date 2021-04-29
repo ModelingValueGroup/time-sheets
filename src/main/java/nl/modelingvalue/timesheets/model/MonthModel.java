@@ -53,8 +53,8 @@ public class MonthModel extends Model<UserModel> {
         LocalDate lastDay  = firstDay.plusMonths(1).minusDays(1);
 
         String       root           = parentModel.parentModel.parentModel.repoBucket.url;
-        List<String> allProjectKeys = selectFromAllWork(wi -> wi.projectBean().getId()).toList();
-        String       projectId      = allProjectKeys.toString();
+        List<String> allProjectKeys = selectFromAllWork(wi -> wi.projectBean().getId()).distinct().toList();
+        String       projectId      = allProjectKeys.size() == 1 ? allProjectKeys.get(0) : allProjectKeys.toString();
         String       startDate      = firstDay.format(DATE_FORMATTER);
         String       endDate        = lastDay.format(DATE_FORMATTER);
         String       user           = parentModel.name.toLowerCase();
