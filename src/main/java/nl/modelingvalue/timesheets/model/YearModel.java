@@ -5,17 +5,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import nl.modelingvalue.timesheets.settings.JiraBucket;
+import nl.modelingvalue.timesheets.settings.RepoBucket;
 
 @SuppressWarnings("unused")
 public class YearModel extends Model<TimeAdminModel> {
-    public final JiraBucket                jiraBucket;
+    public final RepoBucket                repoBucket;
     public final int                       year;
     public final Map<String, ProjectModel> projectMap = new HashMap<>();
 
-    public YearModel(TimeAdminModel timeAdminModel, JiraBucket jiraBucket, int year) {
+    public YearModel(TimeAdminModel timeAdminModel, RepoBucket repoBucket, int year) {
         super(timeAdminModel);
-        this.jiraBucket = jiraBucket;
+        this.repoBucket = repoBucket;
         this.year       = year;
     }
 

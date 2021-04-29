@@ -16,7 +16,7 @@ public class TimeAdminModel extends Model<TimeAdminModel> {
     }
 
     public void add(WorkInfo wi) {
-        getOrCreateSubModel(yearMap, wi.year(), year -> new YearModel(this, wi.jiraBucket(), year))
+        getOrCreateSubModel(yearMap, wi.year(), year -> new YearModel(this, wi.repoBucket(), year))
                 .add(wi);
     }
 

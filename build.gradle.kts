@@ -9,7 +9,7 @@ repositories {
 dependencies {
     implementation(project(":jira-rest-client"))
     implementation("org.freemarker:freemarker:2.3.31")
-    implementation("com.google.code.gson:gson:2.2.2")
+    implementation("com.google.code.gson:gson:2.8.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")

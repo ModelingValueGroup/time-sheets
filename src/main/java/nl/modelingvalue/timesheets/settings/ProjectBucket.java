@@ -1,38 +1,68 @@
 package nl.modelingvalue.timesheets.settings;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import de.micromata.jira.rest.core.domain.AuthorBean;
 import de.micromata.jira.rest.core.domain.ProjectBean;
 import de.micromata.jira.rest.core.domain.WorkEntryBean;
+import nl.modelingvalue.timesheets.util.U;
 
 public class ProjectBucket {
-    public boolean          ignore;
-    public String           bucketName;
-    public String           namePattern;
-    public String           keyPattern;
-    public List<UserBucket> userBuckets;
+    public boolean                 ignore;
+    public String                  repoName;
+    public String                  projectName;
+    public String                  projectKey;
+    public long                    budget;
+    public Map<String, UserBucket> userBuckets;
 
-    public boolean isMatch(ProjectBean pb) {
-        return !ignore &&
-                (namePattern != null && pb.getName() != null && pb.getName().matches(namePattern))
-                || (keyPattern != null && pb.getKey() != null && pb.getKey().matches(keyPattern));
+    public  int     year;
+    public  String  name;
+    private Pattern repoNamePat;
+    private Pattern projectNamePat;
+    private Pattern projectKeyPat;
+
+    public void init(int year, String name) {
+        this.year = year;
+        this.name = name;
+        if (projectName == null && projectKey == null) {
+            projectName = name;
+        }
+        if (repoNamePat == null) {
+            repoNamePat = U.cachePattern(repoName);
+        }
+        if (projectNamePat == null) {
+            projectNamePat = U.cachePattern(projectName);
+        }
+        if (projectKeyPat == null) {
+            projectKeyPat = U.cachePattern(projectKey);
+        }
+        userBuckets.forEach((n, u) -> u.init(n));
     }
 
-    public String findUserBucket(WorkEntryBean workEntryBean) {
+    public boolean isMatch(RepoBucket repo, ProjectBean pb) {
+        if (ignore) {
+            return false;
+        }
+        return (repoName == null || repoNamePat.matcher(repo.name).matches())
+                && (projectName == null || projectNamePat.matcher(pb.getName()).matches())
+                && (projectKey == null || projectKeyPat.matcher(pb.getKey()).matches());
+    }
+
+    public UserBucket findUserBucket(WorkEntryBean workEntryBean) {
         AuthorBean       author   = workEntryBean.getAuthor();
-        List<UserBucket> matching = this.userBuckets.stream().filter(u -> u.isMatch(author)).toList();
-        if (matching.isEmpty()) {
+        List<UserBucket> matching = this.userBuckets.values().stream().filter(u -> u.isMatch(author) && workEntryBean.getStartedDate().getYear() == year).toList();
+        if (matching.size() == 0) {
             return null;
+        } else if (matching.size() == 1) {
+            return matching.get(0);
         }
-        if (1 < matching.size() && matching.get(matching.size() - 1).displayNamePattern.equals(".*")) {
-            matching = new ArrayList<>(matching);
-            matching.remove(matching.size() - 1);
+        List<UserBucket> matchingEx = matching.stream().filter(u -> !u.isCatchAll()).toList();
+        if (matchingEx.size() == 1) {
+            return matchingEx.get(0);
+        } else {
+            throw new Error("multiple userbuckets match on " + workEntryBean.getAuthor().getDisplayName() + ": " + matching);
         }
-        if (matching.size() == 1) {
-            return matching.get(0).bucketName;
-        }
-        throw new Error("multiple userbuckets match on " + workEntryBean.getAuthor().getDisplayName() + ": " + matching);
     }
 }

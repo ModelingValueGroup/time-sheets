@@ -1,16 +1,15 @@
 package nl.modelingvalue.timesheets.generate;
 
-import java.util.List;
 import java.util.Map.Entry;
 
 import nl.modelingvalue.timesheets.model.ProjectModel;
 import nl.modelingvalue.timesheets.model.TimeAdminModel;
 import nl.modelingvalue.timesheets.model.WorkInfo;
-import nl.modelingvalue.timesheets.settings.JiraBucket;
+import nl.modelingvalue.timesheets.settings.Settings;
 import nl.modelingvalue.timesheets.util.FreeMarkerEngine;
 
 public class SheetGenerator {
-    public static void generate(List<JiraBucket> settings, TimeAdminModel timeadmin) {
+    public static void generate(Settings settings, TimeAdminModel timeadmin) {
         //trace(timeadmin);
 
         ProjectModel projectModel = timeadmin.yearMap.get(2019).projectMap.get("dclare");

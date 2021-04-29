@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -29,20 +30,23 @@ import de.micromata.jira.rest.core.jql.JqlBuilder;
 import de.micromata.jira.rest.core.jql.JqlSearchBean;
 import nl.modelingvalue.timesheets.model.TimeAdminModel;
 import nl.modelingvalue.timesheets.model.WorkInfo;
-import nl.modelingvalue.timesheets.settings.JiraBucket;
 import nl.modelingvalue.timesheets.settings.ProjectBucket;
+import nl.modelingvalue.timesheets.settings.RepoBucket;
+import nl.modelingvalue.timesheets.settings.Settings;
+import nl.modelingvalue.timesheets.settings.YearBucket;
 import nl.modelingvalue.timesheets.util.Yielder;
 
 public class Harvester {
     private static final boolean TRACE = Boolean.getBoolean("Harvester.TRACE");
 
-    private final JiraBucket     jiraBucket;
-    private       JiraRestClient jiraRestClient;
+    private final RepoBucket              repoBucket;
+    private final Map<String, YearBucket> yearsMap;
+    private       JiraRestClient          jiraRestClient;
 
-    public static void harvest(List<JiraBucket> settings, TimeAdminModel timeadmin) {
-        List<Harvester> harvesters = settings.stream()
+    public static void harvest(Settings settings, TimeAdminModel timeadmin) {
+        List<Harvester> harvesters = settings.reposMap.values().stream()
                 .filter(j -> !j.ignore)
-                .map(Harvester::new)
+                .map(r -> new Harvester(r, settings.yearsMap))
                 .toList();
         Future<?> futureOverall = POOL.submit(() -> {
                     Stream<Harvester> harvestersStream = harvesters.stream();
@@ -50,13 +54,13 @@ public class Harvester {
                         h.connect();
                         Stream<ProjectBean> projectsStream = h.getProjectsStream();
                         executeInParallel(projectsStream, p -> {
-                            long              t0            = System.currentTimeMillis();
-                            ProjectBucket     projectBucket = h.findBucket(p);
-                            Stream<IssueBean> issuesStream  = h.getIssuesStream(p);
-                            executeInParallel(issuesStream, i -> {
+                            long                t0             = System.currentTimeMillis();
+                            List<ProjectBucket> projectBuckets = h.findProjectBuckets(p);
+                            executeInParallel(h.getIssuesStream(p), i -> {
                                 Stream<WorkEntryBean> workEntriesStream = h.getWorkEntries(p, i);
-                                executeInParallel(workEntriesStream, w ->
-                                        timeadmin.add(new WorkInfo(h.jiraBucket, projectBucket, p, i, w)));
+                                executeInParallel(workEntriesStream, w -> {
+                                    projectBuckets.stream().filter(pb->pb.year==w.getStartedDate().getYear()).findFirst().ifPresent(projectBucket-> timeadmin.add(new WorkInfo(h.repoBucket, projectBucket, p, i, w)));
+                                });
                             });
                             System.err.printf("... %20.3f sec for %s\n", (System.currentTimeMillis() - t0) / 1000.0, p.getName());
                         });
@@ -66,51 +70,48 @@ public class Harvester {
         waitFor(futureOverall);
     }
 
-    private Harvester(JiraBucket jiraBucket) {
-        this.jiraBucket = jiraBucket;
+    private Harvester(RepoBucket repoBucket, Map<String, YearBucket> yearsMap) {
+        this.repoBucket = repoBucket;
+        this.yearsMap   = yearsMap;
     }
 
-    private ProjectBucket findBucket(ProjectBean projectBean) {
-        List<ProjectBucket> theProjectBucket = jiraBucket.projectBuckets.stream().filter(pat -> pat.isMatch(projectBean)).toList();
-        if (theProjectBucket.size() != 1) {
-            throw new Error("jira project " + projectBean.getKey() + " in " + jiraBucket.name + " matches multiple project buckets in the settings: " + theProjectBucket);
-        }
-        return theProjectBucket.get(0);
+    private List<ProjectBucket> findProjectBuckets(ProjectBean projectBean) {
+        return yearsMap.values().stream().flatMap(y -> y.values().stream()).filter(pat -> pat.isMatch(repoBucket, projectBean)).toList();
     }
 
     private void connect() {
         if (TRACE) {
-            System.err.println(Thread.currentThread().getName() + "- >>> connect  -  " + jiraBucket.name);
+            System.err.println(Thread.currentThread().getName() + "- >>> connect  -  " + repoBucket.name);
         }
         try {
             final JiraRestClient jiraRestClient = new JiraRestClient(POOL);
-            int                  response       = jiraRestClient.connect(new URI(jiraBucket.url), jiraBucket.username, jiraBucket.apiToken);
+            int                  response       = jiraRestClient.connect(new URI(repoBucket.url), repoBucket.username, repoBucket.apiToken);
             if (response != 200) {
                 throw new Error("could not connect: response=" + response);
             }
             this.jiraRestClient = jiraRestClient;
         } catch (IOException | URISyntaxException | ExecutionException | InterruptedException e) {
-            throw new Error("could not connect to " + jiraBucket.url, e);
+            throw new Error("could not connect to " + repoBucket.url, e);
         }
         if (TRACE) {
-            System.err.println(Thread.currentThread().getName() + "- <<< connect  -  " + jiraBucket.name);
+            System.err.println(Thread.currentThread().getName() + "- <<< connect  -  " + repoBucket.name);
         }
     }
 
     private Stream<ProjectBean> getProjectsStream() {
         return Yielder.stream(POOL, yielder -> {
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "  - >>> projects  -  " + jiraBucket.name);
+                System.err.println(Thread.currentThread().getName() + "  - >>> projects  -  " + repoBucket.name);
             }
             CompletableFuture<List<ProjectBean>> allProjectsFuture   = jiraRestClient.getProjectClient().getAllProjects();
             List<ProjectBean>                    projectBeans        = waitFor(allProjectsFuture);
-            List<ProjectBean>                    enabledProjectBeans = projectBeans.stream().filter(p -> jiraBucket.projectBuckets.stream().anyMatch(pb -> pb.isMatch(p))).toList();
+            List<ProjectBean>                    enabledProjectBeans = projectBeans.stream().filter(p -> yearsMap.values().stream().flatMap(y -> y.values().stream()).anyMatch(pb -> pb.isMatch(repoBucket, p))).toList();
             yielder.yieldz(enabledProjectBeans);
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "  - ............... found " + enabledProjectBeans.size() + " projects in " + jiraBucket.name);
+                System.err.println(Thread.currentThread().getName() + "  - ............... found " + enabledProjectBeans.size() + " projects in " + repoBucket.name);
             }
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "  - <<< projects  -  " + jiraBucket.name);
+                System.err.println(Thread.currentThread().getName() + "  - <<< projects  -  " + repoBucket.name);
             }
         });
     }
@@ -118,7 +119,7 @@ public class Harvester {
     private Stream<IssueBean> getIssuesStream(ProjectBean project) {
         return Yielder.stream(POOL, yielder -> {
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "      - >>> issues    -  " + jiraBucket.name + "." + project.getKey());
+                System.err.println(Thread.currentThread().getName() + "      - >>> issues    -  " + repoBucket.name + "." + project.getKey());
             }
 
             SearchClient    searchClient = jiraRestClient.getSearchClient();
@@ -136,7 +137,7 @@ public class Harvester {
             } while (jsb.getStartAt() < jqlSearchResult.getTotal());
 
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "      - <<< issues    -  " + jiraBucket.name + "." + project.getKey());
+                System.err.println(Thread.currentThread().getName() + "      - <<< issues    -  " + repoBucket.name + "." + project.getKey());
             }
         });
     }
@@ -144,7 +145,7 @@ public class Harvester {
     private Stream<WorkEntryBean> getWorkEntries(ProjectBean project, IssueBean issue) {
         return Yielder.stream(POOL, yielder -> {
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "      - >>> entries   -  " + jiraBucket.name + "." + project.getKey() + "." + issue.getKey());
+                System.err.println(Thread.currentThread().getName() + "      - >>> entries   -  " + repoBucket.name + "." + project.getKey() + "." + issue.getKey());
             }
 
             String                         id            = issue.getId();
@@ -156,10 +157,10 @@ public class Harvester {
             }
             yielder.yieldz(worklogs);
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "      - ............... found " + worklogs.size() + " worklogs in " + jiraBucket.name + "." + project.getKey() + "." + issue.getKey());
+                System.err.println(Thread.currentThread().getName() + "      - ............... found " + worklogs.size() + " worklogs in " + repoBucket.name + "." + project.getKey() + "." + issue.getKey());
             }
             if (TRACE) {
-                System.err.println(Thread.currentThread().getName() + "      - <<< entries   -  " + jiraBucket.name + "." + project.getKey() + "." + issue.getKey());
+                System.err.println(Thread.currentThread().getName() + "      - <<< entries   -  " + repoBucket.name + "." + project.getKey() + "." + issue.getKey());
             }
         });
     }

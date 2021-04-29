@@ -55,7 +55,7 @@ public class ProjectModel extends Model<YearModel> {
         List<String> projectKeys  = selectFromAllWork(w -> w.projectBean().getKey()).distinct().toList();
         List<String> statusValues = List.of("In Progress", "In Review");
         String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
-        return parentModel.jiraBucket.url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+        return parentModel.repoBucket.url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
     public List<UserModel> getUsers() {

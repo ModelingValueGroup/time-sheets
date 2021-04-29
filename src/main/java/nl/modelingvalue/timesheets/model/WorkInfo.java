@@ -5,26 +5,26 @@ import java.time.LocalDateTime;
 import de.micromata.jira.rest.core.domain.IssueBean;
 import de.micromata.jira.rest.core.domain.ProjectBean;
 import de.micromata.jira.rest.core.domain.WorkEntryBean;
-import nl.modelingvalue.timesheets.settings.JiraBucket;
 import nl.modelingvalue.timesheets.settings.ProjectBucket;
+import nl.modelingvalue.timesheets.settings.RepoBucket;
 
 public record WorkInfo(
-        JiraBucket jiraBucket,
+        RepoBucket repoBucket,
         ProjectBucket projectBucket,
         ProjectBean projectBean,
         IssueBean issueBean,
         WorkEntryBean workEntryBean
 ) {
-    public String jiraName() {
-        return jiraBucket.name;
+    public String repoName() {
+        return repoBucket.name;
     }
 
     public String projectBucketName() {
-        return projectBucket.bucketName;
+        return projectBucket.name;
     }
 
     public String userBucketName() {
-        return projectBucket.findUserBucket(workEntryBean);
+        return projectBucket.findUserBucket(workEntryBean).name;
     }
 
     public String authorName() {

@@ -52,7 +52,7 @@ public class MonthModel extends Model<UserModel> {
         LocalDate firstDay = LocalDate.of(parentModel.parentModel.parentModel.year, month, 1);
         LocalDate lastDay  = firstDay.plusMonths(1).minusDays(1);
 
-        String       root           = parentModel.parentModel.parentModel.jiraBucket.url;
+        String       root           = parentModel.parentModel.parentModel.repoBucket.url;
         List<String> allProjectKeys = selectFromAllWork(wi -> wi.projectBean().getId()).toList();
         String       projectId      = allProjectKeys.toString();
         String       startDate      = firstDay.format(DATE_FORMATTER);
