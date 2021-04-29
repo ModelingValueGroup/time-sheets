@@ -14,6 +14,18 @@ jobs:
         with:
           submodules: recursive
 
+      - name: "setup JDK"
+        uses: actions/setup-java@v2
+        with:
+          java-version: 16
+          distribution: zulu
+
+      #### build #######################################################################################################
+      - name: "build"
+        run:  |
+          ./gradlew --stacktrace --scan build
+
+      #### run #########################################################################################################
       - name: "checkout"
         uses: actions/checkout@v2
         with:
@@ -21,14 +33,9 @@ jobs:
           token: "${{secrets.ALLREP_TOKEN}}"
           path: "time-sheets-mvg"
 
-      - name: "setup JDK"
-        uses: actions/setup-java@v2
-        with:
-          java-version: 16
-          distribution: zulu
-
-      #### build ######################################################################################################
-      - name: "build"
-        run:  |
+      - name: "run"
+        run: |
+          cd time-sheets-mvg
           echo '${{secrets.TIMESHEET_REPO_JSON}}' > "/tmp/time-sheets-years.json"
-          ./gradlew --stacktrace --scan build
+          "../build/distributions/time-sheets/bin/time-sheets" -r "/tmp/time-sheets-years.json" -y "time-sheets-mvg/mvg-time-sheets.json"
+          ls -l

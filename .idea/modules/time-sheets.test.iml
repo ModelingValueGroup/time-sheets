@@ -33,7 +33,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: commons-beanutils:commons-beanutils:1.8.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: commons-digester:commons-digester:1.8.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: commons-collections:commons-collections:3.2.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="time-sheets.main" />
 </module>

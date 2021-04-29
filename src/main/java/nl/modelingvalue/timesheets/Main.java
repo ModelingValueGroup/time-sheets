@@ -11,6 +11,6 @@ public class Main {
         TimeAdminModel timeadmin = new TimeAdminModel();
 
         Harvester.harvest(settings, timeadmin);
-        SheetGenerator.generate(settings, timeadmin);
+        SheetGenerator.generate(settings, timeadmin,"timesheet-%s-%s.html");
     }
 }
