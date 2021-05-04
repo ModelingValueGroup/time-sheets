@@ -1,0 +1,200 @@
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"
+            integrity="sha512-nOQuvD9nKirvxDdvQ9OMqe2dgapbPB7vYAMrzJihw5m+aNcf0dX53m6YxM4LgA9u8e9eg9QX+/+mPu8kCNpV2A=="
+            crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        var MY_DATA = "@@@data@@@"
+        var MY_IV = "@@@iv@@@"
+        var MY_COOKIE = "pw"
+
+        function setCookie(value) {
+            var d = new Date();
+            d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
+            document.cookie = MY_COOKIE + "=" + CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(value)) + ";" + "expires=" + d.toUTCString();
+        }
+
+        function getCookie() {
+            var name = MY_COOKIE + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) === 0) {
+                    let hex = c.substring(name.length, c.length);
+                    return CryptoJS.enc.Hex.parse(hex).toString(CryptoJS.enc.Utf8);
+                }
+            }
+            return null;
+        }
+
+        function decryptToText(key, data, iv) {
+            return CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(
+                {
+                    ciphertext: CryptoJS.enc.Base64.parse(data)
+                },
+                CryptoJS.enc.Base64.parse(CryptoJS.MD5(key).toString(CryptoJS.enc.Base64)), {
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7,
+                    iv: CryptoJS.enc.Base64.parse(iv),
+                }));
+        }
+
+        function decryptClicked() {
+            let passwordText = document.getElementById("password");
+            console.log("aaa", passwordText.value)
+            setCookie(passwordText.value)
+            try {
+                tryDecryptAndReplace(passwordText.value)
+            } catch (e) {
+            }
+        }
+
+        function tryDecryptAndReplace(pw) {
+            let innerHTML = decryptToText(pw, MY_DATA, MY_IV);
+            if (!innerHTML.includes("<html>")) {
+                throw null;
+            }
+            //document.write(innerHTML);
+            var doc = document.open("text/html");
+            doc.write(innerHTML);
+            doc.close();
+        }
+
+        function tryCookie() {
+            if (new URLSearchParams(window.location.search).get('r') != null) {
+                setCookie("");
+            } else {
+                let cookie = getCookie()
+                if (cookie != null && cookie !== "") {
+                    try {
+                        tryDecryptAndReplace(cookie)
+                    } catch (e) {
+                        setCookie("");
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+		@import url(https://fonts.googleapis.com/css?family=Open+Sans:100,300,400,700);
+		@import url(//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css);
+		body, html {
+			height : 100%;
+		}
+		body {
+			font-family : "Open Sans", sans-serif;
+			font-weight : 100;
+			display     : flex;
+			overflow    : hidden;
+		}
+		input ::-webkit-input-placeholder {
+			color : rgba(255, 255, 255, 0.7);
+		}
+		input ::-moz-placeholder {
+			color : rgba(255, 255, 255, 0.7);
+		}
+		input :-ms-input-placeholder {
+			color : rgba(255, 255, 255, 0.7);
+		}
+		input:focus {
+			outline : 0 transparent solid;
+		}
+		input:focus ::-webkit-input-placeholder {
+			color : rgba(0, 0, 0, 0.7);
+		}
+		input:focus ::-moz-placeholder {
+			color : rgba(0, 0, 0, 0.7);
+		}
+		input:focus :-ms-input-placeholder {
+			color : rgba(0, 0, 0, 0.7);
+		}
+		.login-form {
+			min-height : 10rem;
+			margin     : auto;
+			max-width  : 50%;
+			padding    : 0.5rem;
+		}
+		.login-text {
+			color      : white;
+			font-size  : 1.5rem;
+			margin     : 0 auto;
+			max-width  : 50%;
+			padding    : 0.5rem;
+			text-align : center;
+		}
+		.login-text .fa-stack-1x {
+			color : black;
+		}
+		.login-password {
+			background    : transparent;
+			border        : 0 solid;
+			border-bottom : 1px solid rgba(255, 255, 255, 0.5);
+			color         : white;
+			display       : block;
+			margin        : 1rem;
+			padding       : 0.5rem;
+			transition    : 250ms background ease-in;
+			width         : calc(100% - 3rem);
+		}
+		.login-password:focus {
+			background : white;
+			color      : black;
+			transition : 250ms background ease-in;
+		}
+		[class*=underlay] {
+			left       : 0;
+			min-height : 100%;
+			min-width  : 100%;
+			position   : fixed;
+			top        : 0;
+		}
+		.underlay-photo {
+			-webkit-animation : hue-rotate 6s infinite;
+			animation         : hue-rotate 6s infinite;
+			background        : url("https://images.photowall.com/products/55402.jpg");
+			background-size   : cover;
+			-webkit-filter    : grayscale(30%);
+			z-index           : -1;
+		}
+		.underlay-black {
+			background : rgba(0, 0, 0, 0.7);
+			z-index    : -1;
+		}
+		@-webkit-keyframes hue-rotate {
+			from {
+				-webkit-filter : grayscale(30%) hue-rotate(0deg);
+			}
+			to {
+				-webkit-filter : grayscale(30%) hue-rotate(360deg);
+			}
+		}
+		@keyframes hue-rotate {
+			from {
+				-webkit-filter : grayscale(30%) hue-rotate(0deg);
+			}
+			to {
+				-webkit-filter : grayscale(30%) hue-rotate(360deg);
+			}
+		}
+    </style>
+</head>
+<body id="body" onload="tryCookie()">
+<div class="login-form">
+    <p class="login-text">
+                    <span class="fa-stack fa-lg">
+                      <i class="fa fa-circle fa-stack-2x"></i>
+                      <i class="fa fa-lock fa-stack-1x"></i>
+                    </span>
+    </p>
+    <input onblur="this.focus()" autofocus autocomplete="off" type="password" id="password" class="login-password" placeholder="Password"
+           onkeyup="decryptClicked()"/>
+</div>
+<div class="underlay-photo"></div>
+<div class="underlay-black"></div>
+</body>
+</html>

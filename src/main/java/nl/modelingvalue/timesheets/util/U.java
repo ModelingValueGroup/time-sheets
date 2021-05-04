@@ -1,5 +1,10 @@
 package nl.modelingvalue.timesheets.util;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 public class U {
@@ -13,5 +18,17 @@ public class U {
             }
         }
         return Pattern.compile(regexp);
+    }
+
+    static String readResource(String name) {
+        try {
+            URL resource = PageEncryptWrapper.class.getResource(name);
+            if (resource == null) {
+                throw new Error("wrapper source not found");
+            }
+            return Files.readString(Paths.get(resource.toURI()));
+        } catch (IOException | URISyntaxException e) {
+            throw new Error("could not read wrapper source from resource",e);
+        }
     }
 }

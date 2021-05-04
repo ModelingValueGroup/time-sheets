@@ -48,7 +48,7 @@ public class Settings {
 
     private static <T> Map<String, T> read(Path f, Type type) {
         try {
-            return GsonUtils.withoutRecords().fromJson(new JsonReader(Files.newBufferedReader(f)), type);
+            return GsonUtils.withSpecials().fromJson(new JsonReader(Files.newBufferedReader(f)), type);
         } catch (IOException e) {
             throw new Error("can not read " + f.toAbsolutePath(), e);
         }
