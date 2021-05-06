@@ -33,16 +33,17 @@ jobs:
           token: "${{secrets.ALLREP_TOKEN}}"
           path: "time-sheets-mvg"
 
-      - name: "run"
-        run: |
-          cd time-sheets-mvg
-          echo '${{secrets.TIMESHEET_REPO_JSON}}' > "time-sheets-years.json"
-          tar xf ../build/distributions/time-sheets.tar
-          "time-sheets/bin/time-sheets" -r "time-sheets-years.json" -y "mvg-time-sheets.json"
-          rm -rf time-sheets
-
-          git config --global user.email "automation@modelingvalue.nl"
-          git config --global user.name "Automation through Actions"
-          git add timesheet-*.html
-          git commit -m "new timesheets @$(date)"
-          git push
+#      - name: "run"
+#        run: |
+#          cd time-sheets-mvg
+#          echo '${{secrets.TIMESHEET_REPO_JSON}}' > "time-sheets-years.json"
+#          tar xf ../build/distributions/time-sheets.tar
+#          "time-sheets/bin/time-sheets" -r "time-sheets-years.json" -y "mvg-time-sheets.json"
+#          rm -rf time-sheets
+#
+#          git config --global user.email "automation@modelingvalue.nl"
+#          git config --global user.name "Automation through Actions"
+#          git add unprotected/*.html
+#          git add docs/*.html
+#          git commit -m "new timesheets @$(date)"
+#          git push

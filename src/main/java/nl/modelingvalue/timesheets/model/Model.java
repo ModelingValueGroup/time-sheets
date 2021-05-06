@@ -32,7 +32,7 @@ public abstract class Model<P extends Model<?>> {
         return a.replaceAll(" ", "&nbsp;");
     }
 
-    public static String workHoursFromSec(long totalSec) {
+    public static String hoursFromSec(long totalSec) {
         long   numQuarters = (totalSec * 4) / (60 * 60);
         double v           = numQuarters / 4.0;
         return String.format("%4.2f", v);

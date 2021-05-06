@@ -1,16 +1,15 @@
 package nl.modelingvalue.timesheets;
 
-import nl.modelingvalue.timesheets.generate.SheetGenerator;
-import nl.modelingvalue.timesheets.harvest.Harvester;
-import nl.modelingvalue.timesheets.model.TimeAdminModel;
-import nl.modelingvalue.timesheets.settings.Settings;
+import nl.modelingvalue.timesheets.info.Settings;
 
 public class Main {
     public static void main(String[] args) {
-        Settings       settings  = Settings.read(args);
-        TimeAdminModel timeadmin = new TimeAdminModel();
+        Settings settings = Settings.read(args);
 
-        Harvester.harvest(settings, timeadmin);
-        SheetGenerator.generate(settings, timeadmin,"timesheet-%s-%s.html");
+        settings.connect();
+        settings.downloadAllProjects();
+        settings.checkProjectConsistency();
+        settings.downloadAllWorkItems();
+        settings.generateAll();
     }
 }

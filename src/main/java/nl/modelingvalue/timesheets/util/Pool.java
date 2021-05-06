@@ -13,7 +13,7 @@ public class Pool {
     public static final boolean         FORCE_SEQUENCIAL = Boolean.getBoolean("FORCE_SEQUENCIAL");
     public static final ExecutorService POOL             = Executors.newCachedThreadPool(new DaemonThreadFactory("POOL"));
 
-    public static <T> void executeInParallel(Stream<T> stream, Consumer<T> consumer) {
+    public static <T> void parallelExecAndWait(Stream<T> stream, Consumer<T> consumer) {
         if (FORCE_SEQUENCIAL) {
             stream.forEach(consumer);
         } else {

@@ -8,9 +8,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -99,24 +103,14 @@ public class GsonUtils {
     private static class OrderAdapterFactory implements TypeAdapterFactory {
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-            @SuppressWarnings("unchecked")
-            Class<T> clazz = (Class<T>) typeToken.getRawType();
+            ParameterizedType genMapType = findMapType(typeToken);
 
-            // ... only HashMap<> based classes can be used as container:
-            //noinspection rawtypes
-            Class<? extends HashMap> mapBasedClass = findMapBasedClass(clazz);
-            if (mapBasedClass == null) {
+            if (genMapType == null) {
                 return null;
             }
 
-            // ... and it should be a parameterized class:
-            Type genericSuperclass = mapBasedClass.getGenericSuperclass();
-            if (!(genericSuperclass instanceof ParameterizedType genSuper)) {
-                return null;
-            }
-
-            // ... with 2 types:
-            Type[] types = genSuper.getActualTypeArguments();
+            // ... with 2 type args:
+            Type[] types = genMapType.getActualTypeArguments();
             if (types.length != 2) {
                 return null;
             }
@@ -133,20 +127,28 @@ public class GsonUtils {
                 return null;
             }
 
-            // ... and that class should have an id field of type String:
-            Field idField = getField(valClazz, "id");
-            if (idField == null || !idField.getType().equals(String.class)) {
-                return null;
-            }
-
-            // ... and that class should have an index fields of type int:
-            Field indexField = getField(valClazz, "index");
-            if (indexField == null || !indexField.getType().equals(int.class)) {
+            // ... and that class should have either an id field of type String or an index field of type int:
+            Field idField    = getField("id", String.class, valClazz);
+            Field indexField = getField("index", int.class, valClazz);
+            if (idField == null && indexField == null) {
                 return null;
             }
 
             // now build us a TypeAdaptor that does some special handling:
             TypeAdapter<T> delegate = gson.getDelegateAdapter(this, typeToken);
+            Supplier<Constructor<?>> constructor = () -> {
+                try {
+                    Class<? super T> rawType = typeToken.getRawType();
+                    if (rawType.equals(Map.class)) {
+                        return HashMap.class.getConstructor();
+                    } else {
+                        return rawType.getConstructor();
+                    }
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+
             return new TypeAdapter<>() {
                 @Override
                 public void write(JsonWriter out, T value) throws IOException {
@@ -161,21 +163,25 @@ public class GsonUtils {
                     } else {
                         try {
                             //noinspection unchecked
-                            Map<String, Object> x = (Map<String, Object>) clazz.getDeclaredConstructor().newInstance();
+                            Map<String, Object> x = (Map<String, Object>) constructor.get().newInstance();
                             in.beginObject();
                             for (int i = 0; in.hasNext(); i++) {
                                 String name = in.nextName();
                                 Object y    = gson.getAdapter(valClazz).read(in);
                                 x.put(name, y);
-                                idField.set(y, name);
-                                indexField.set(y, i);
+                                if (idField != null) {
+                                    idField.set(y, name);
+                                }
+                                if (indexField != null) {
+                                    indexField.set(y, i);
+                                }
                             }
                             in.endObject();
 
                             //noinspection unchecked
                             return (T) x;
 
-                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -183,24 +189,38 @@ public class GsonUtils {
             };
         }
 
-        @SuppressWarnings("rawtypes")
-        private Class<? extends HashMap> findMapBasedClass(Class<?> clazz) {
-            Class<?> c = clazz;
-            while (c.getSuperclass() != null) {
-                if (c.getSuperclass().equals(HashMap.class)) {
-                    //noinspection unchecked
-                    return (Class<? extends HashMap>) c;
-                }
-                c = c.getSuperclass();
-            }
-            return null;
+        private Field getField(String name, Class<?> t, Class<?> c) {
+            Optional<Field> fieldOpt = getAllFields(c, null).stream().filter(f -> f.getName().equals(name) && f.getType().equals(t)).findAny();
+            fieldOpt.ifPresent(f -> f.setAccessible(true));
+            return fieldOpt.orElse(null);
         }
 
-        private Field getField(Class<?> valClazz, String fieldName) {
-            return Arrays.stream(valClazz.getDeclaredFields()).filter(f1 -> f1.getName().equals(fieldName)).findAny().map(f -> {
-                f.setAccessible(true);
-                return f;
-            }).orElse(null);
+        private static List<Field> getAllFields(Class<?> c, List<Field> fields) {
+            if (fields == null) {
+                fields = new ArrayList<>();
+            }
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+            if (c.getSuperclass() != null) {
+                getAllFields(c.getSuperclass(), fields);
+            }
+            return fields;
         }
+
+        @SuppressWarnings("rawtypes")
+        private ParameterizedType findMapType(TypeToken typeToken) {
+            Class c = typeToken.getRawType();
+            if (Map.class.isAssignableFrom(c)) {
+                Type t = typeToken.getType();
+                if (t instanceof ParameterizedType) {
+                    return (ParameterizedType) t;
+                }
+            }
+            Type genericSuperclass = c.getGenericSuperclass();
+            if (genericSuperclass == null) {
+                return null;
+            }
+            return findMapType(TypeToken.get(genericSuperclass));
+        }
+
     }
 }

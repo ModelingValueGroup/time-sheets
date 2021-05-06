@@ -1,49 +1,37 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
+
+import nl.modelingvalue.timesheets.info.PersonInfo;
 
 @SuppressWarnings("unused")
-public class UserModel extends Model<ProjectModel> {
-    public final String                   name;
-    public final Map<Integer, MonthModel> monthMap = new HashMap<>();
+public class UserModel extends Model<TableModel> {
+    public final PersonInfo personInfo;
 
-    public UserModel(ProjectModel projectModel, WorkInfo wi) {
-        super(projectModel);
-        this.name = wi.userBucketName();
-    }
-
-    public  void add(WorkInfo wi) {
-        getOrCreateSubModel(monthMap, wi.month(), __ -> new MonthModel(this, wi))
-                .add(wi);
-    }
-
-    <T> Stream<T> selectFromAllWork(Function<WorkInfo, T> selector) {
-        return monthMap.values().stream().flatMap(e -> e.selectFromAllWork(selector));
+    public UserModel(TableModel tableModel, PersonInfo personInfo) {
+        super(tableModel);
+        this.personInfo = personInfo;
     }
 
     public String getName() {
-        return name;
+        return personInfo.fullName;
     }
 
     public List<MonthModel> getMonths() {
-        return IntStream.rangeClosed(1, 12).mapToObj(n -> monthMap.getOrDefault(n, new MonthModel(this, n))).toList();
+        return IntStream.rangeClosed(1, 12).mapToObj(m -> new MonthModel(this, m)).toList();
     }
 
     public String getWorked() {
-        return workHoursFromSec(getWorkedSec());
+        return hoursFromSec(getWorkedSec());
     }
 
     public String getBudget() {
-        return workHoursFromSec(getBudgetSec());
+        return hoursFromSec(getBudgetSec());
     }
 
     public String getBudgetLeft() {
-        return workHoursFromSec(getBudgetLeftSec());
+        return hoursFromSec(getBudgetLeftSec());
     }
 
     public String getBudgetLeftClass() {
@@ -51,7 +39,10 @@ public class UserModel extends Model<ProjectModel> {
     }
 
     public long getWorkedSec() {
-        return selectFromAllWork(WorkInfo::seconds).mapToLong(s -> s).sum();
+        return parentModel.projectInfos
+                .stream()
+                .mapToLong(pi -> pi.accountYearMonthInfo.workSecFor(personInfo, parentModel.parentModel.year))
+                .sum();
     }
 
     public long getBudgetSec() {
