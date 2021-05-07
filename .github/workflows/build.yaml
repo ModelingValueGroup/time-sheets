@@ -49,7 +49,7 @@ jobs:
 
           git config --global user.email "automation@modelingvalue.nl"
           git config --global user.name "Automation through Actions"
-          git add unprotected/*.html
+          git add raws/*.html
           git add docs/*.html
           git commit -m "new timesheets @$(date)"
           git push
