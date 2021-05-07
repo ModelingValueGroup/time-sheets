@@ -1,46 +1,46 @@
 package nl.modelingvalue.timesheets.model;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import nl.modelingvalue.timesheets.info.PageInfo;
+import nl.modelingvalue.timesheets.Config;
+import nl.modelingvalue.timesheets.info.PartInfo;
 import nl.modelingvalue.timesheets.info.ProjectInfo;
 
 public class PageModel extends Model<PageModel> {
-    private final PageInfo pageInfo;
+    private final PartInfo partInfo;
     public final  int      year;
 
-    public PageModel(PageInfo pageInfo, int year) {
+    public PageModel(PartInfo partInfo, int year) {
         super(null);
-        this.pageInfo = pageInfo;
+        this.partInfo = partInfo;
         this.year     = year;
     }
 
     public String getName() {
-        return pageInfo.id;
+        return partInfo.id;
     }
 
-    public int getYear() {
-        return year;
+    public String getYear() {
+        return String.format("%4d", year);
     }
 
     public TableModel getTotalTable() {
-        List<ProjectInfo> projectInfos = pageInfo.allProjectInfosDeep().toList();
-        return new TableModel(this, pageInfo.id, projectInfos);
+        List<ProjectInfo> projectInfos = partInfo.allProjectInfosDeep().toList();
+        return new TableModel(this, partInfo.id, projectInfos);
     }
 
     public List<TableModel> getSubTables() {
-        return Stream.concat(
-                pageInfo.pageInfos.stream().filter(pi->pi.notEmpty(year)).map(pi -> new TableModel(this, pi.id, pi.allProjectInfosDeep().toList())),
-                pageInfo.projectInfos.stream().filter(pi -> pi.accountYearMonthInfo.notEmpty(year)).map(pi -> new TableModel(this, pi.id, List.of(pi)))
-        ).toList();
+        return partInfo.allPartInfos()
+                .filter(pi -> pi.notEmpty(year))
+                .map(pi -> new TableModel(this, pi.id, pi.allProjectInfosDeep().toList()))
+                .toList();
     }
 
     public String getRecalcUrl() {
-        return NOT_YET_IMPLEMENTED_URL;
+        return Config.NOT_YET_IMPLEMENTED_URL;
     }
 
     public List<TableModel> getOtherProjects() {
-        return getSubTables().stream().filter(tm -> !tm.equals(this)).toList();
+        return getSubTables().stream().filter(tm -> !tm.parentModel.equals(this)).toList();
     }
 }

@@ -22,7 +22,7 @@ public class Probeer {
         x.forEach((k, v) -> v.check(k));
     }
 
-    public static class X extends HashMap<String,Y> {
+    public static class X extends HashMap<String, Y> {
     }
 
     public static class Y {

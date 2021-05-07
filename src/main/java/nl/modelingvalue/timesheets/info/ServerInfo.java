@@ -28,6 +28,9 @@ public class ServerInfo extends Info {
     private JiraRestClient    jiraRestClient;
     private List<ProjectBean> projectList = new ArrayList<>();
 
+    public ServerInfo() {
+    }
+
     public JiraRestClient getJiraRestClient() {
         return jiraRestClient;
     }
@@ -44,7 +47,7 @@ public class ServerInfo extends Info {
         this.projectList = projectList;
     }
 
-    public void connect() {
+    public void connectAndAskProjects() {
         log(">>> connect to " + id);
         long t0 = System.currentTimeMillis();
         if (ignore) {

@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @SuppressWarnings("SameParameterValue")
 public class U {
+
     public static Pattern cachePattern(String s) {
         String regexp = "/.*/";
         if (s != null) {
@@ -41,4 +44,32 @@ public class U {
         }
         return o;
     }
+
+    public static Stream<Path> selectJsonFiles(Path fd, Pattern defaultNamePat) {
+        try {
+            if (Files.isRegularFile(fd) && fd.getFileName().toString().endsWith(".json")) {
+                return Stream.of(fd);
+            }
+            if (Files.isDirectory(fd)) {
+                return Files.list(fd).filter(f -> defaultNamePat.matcher(f.getFileName().toString()).matches());
+            }
+            System.err.println("WARNING: not a file or dir: " + fd.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("WARNING: dir " + fd.toAbsolutePath() + " can not be scanned for sheetMaker files (" + e + ")");
+        }
+        return Stream.empty();
+    }
+
+    public static long secFromHours(double hours) {
+        return (long) (hours * 4.0) * 60 * 60 / 4;
+    }
+
+    private static double hoursFromSec(long sec) {
+        return ((double) (sec * 4) / (60 * 60)) / 4.0;
+    }
+
+    public static String hoursFromSecFormatted(long totalSec) {
+        return String.format("%4.2f", hoursFromSec(totalSec));
+    }
+
 }

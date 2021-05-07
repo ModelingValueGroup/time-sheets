@@ -3,6 +3,7 @@ package nl.modelingvalue.timesheets.info;
 import java.util.regex.Pattern;
 
 import de.micromata.jira.rest.core.domain.AccountBean;
+import nl.modelingvalue.timesheets.SheetMaker;
 import nl.modelingvalue.timesheets.util.U;
 
 public class PersonInfo extends Info {
@@ -11,17 +12,20 @@ public class PersonInfo extends Info {
     //
     private Pattern regexpPat;
 
-    public PersonInfo(AccountBean ab, Settings settings) {
+    public PersonInfo() {
+    }
+
+    public PersonInfo(AccountBean ab, SheetMaker sheetMaker) {
         // ab.getId() yields 'null' for AccountBeans
         id       = "UNKNOWN:" + ab.getName();
         index    = -1;
         fullName = "UNKNOWN:" + ab.getDisplayName();
         regexp   = ab.getDisplayName();
-        init(settings);
+        init(sheetMaker);
     }
 
-    public void init(Settings settings) {
-        super.init(settings);
+    public void init(SheetMaker sheetMaker) {
+        super.init(sheetMaker);
         if (fullName == null) {
             fullName = id;
         }

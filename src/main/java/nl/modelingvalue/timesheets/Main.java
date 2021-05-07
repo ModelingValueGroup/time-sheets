@@ -1,15 +1,13 @@
 package nl.modelingvalue.timesheets;
 
-import nl.modelingvalue.timesheets.info.Settings;
-
 public class Main {
     public static void main(String[] args) {
-        Settings settings = Settings.read(args);
-
-        settings.connect();
-        settings.downloadAllProjects();
-        settings.checkProjectConsistency();
-        settings.downloadAllWorkItems();
-        settings.generateAll();
+        SheetMaker sheetMaker = SheetMaker.read(args);
+        sheetMaker.connectAndAskProjects();
+        sheetMaker.init();
+        sheetMaker.matchPartsToProjects();
+        sheetMaker.checkProjectConsistency();
+        sheetMaker.downloadAllWorkItems();
+        sheetMaker.generateAll();
     }
 }

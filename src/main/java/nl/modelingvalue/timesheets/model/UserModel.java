@@ -1,9 +1,12 @@
 package nl.modelingvalue.timesheets.model;
 
 import java.util.List;
+import java.util.function.ToLongFunction;
 import java.util.stream.IntStream;
 
+import nl.modelingvalue.timesheets.info.DetailInfo;
 import nl.modelingvalue.timesheets.info.PersonInfo;
+import nl.modelingvalue.timesheets.util.U;
 
 @SuppressWarnings("unused")
 public class UserModel extends Model<TableModel> {
@@ -23,33 +26,29 @@ public class UserModel extends Model<TableModel> {
     }
 
     public String getWorked() {
-        return hoursFromSec(getWorkedSec());
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
     }
 
     public String getBudget() {
-        return hoursFromSec(getBudgetSec());
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
     }
 
     public String getBudgetLeft() {
-        return hoursFromSec(getBudgetLeftSec());
+        return U.hoursFromSecFormatted(getBudgetLeftSec());
     }
 
     public String getBudgetLeftClass() {
         return getBudgetLeftSec() < 0 ? "negative" : "";
     }
 
-    public long getWorkedSec() {
+    public long getSec(ToLongFunction<DetailInfo> f) {
         return parentModel.projectInfos
                 .stream()
-                .mapToLong(pi -> pi.accountYearMonthInfo.workSecFor(personInfo, parentModel.parentModel.year))
+                .mapToLong(pi -> pi.accountYearMonthInfo.secFor(personInfo, parentModel.parentModel.year, f))
                 .sum();
     }
 
-    public long getBudgetSec() {
-        return BUDGET_PLACEHOLDER;
-    }
-
     public long getBudgetLeftSec() {
-        return getBudgetSec() - getWorkedSec();
+        return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
     }
 }

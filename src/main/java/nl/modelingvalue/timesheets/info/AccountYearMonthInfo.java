@@ -1,32 +1,40 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.Collections;
+import static java.util.Collections.emptyMap;
+import static nl.modelingvalue.timesheets.info.DetailInfo.EMPTY_DETAIL;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.ToLongFunction;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import de.micromata.jira.rest.core.domain.AccountBean;
-import de.micromata.jira.rest.core.domain.WorkEntryBean;
+import nl.modelingvalue.timesheets.util.U;
 
 public class AccountYearMonthInfo extends Info {
-    public static final Map<Integer, DetailInfo>                                 EMPTY_MAP   = Collections.emptyMap();
-    public static final List<AccountBean>                                        EMPTY_LIST  = Collections.emptyList();
-    //
-    private final       Map<AccountBean, Map<Integer, Map<Integer, DetailInfo>>> map         = new HashMap<>();
-    private             Map<PersonInfo, List<AccountBean>>                       personIndex = new HashMap<>();
+    private final Map<PersonInfo, Map<Integer, Map<Integer, DetailInfo>>> map = new HashMap<>();
 
-
-    public synchronized void add(WorkEntryBean wb) {
-        Map<Integer, Map<Integer, DetailInfo>> m1         = map.computeIfAbsent(wb.getAuthor(), ab -> new HashMap<>());
-        Map<Integer, DetailInfo>               m2         = m1.computeIfAbsent(wb.getStartedDate().getYear(), y -> new HashMap<>());
-        DetailInfo                             detailInfo = m2.computeIfAbsent(wb.getStartedDate().getMonthValue(), m -> new DetailInfo());
-        detailInfo.add(wb);
+    public AccountYearMonthInfo() {
     }
 
-    public void makePersonIndex() {
-        personIndex = map.keySet().stream().collect(Collectors.groupingBy(settings::findPerson));
+    public void add(Collection<YearBudgetInfo> budgets) {
+        budgets
+                .forEach(ybi -> ybi.values()
+                        .forEach(pbi -> IntStream.rangeClosed(1, 12)
+                                .forEach(month -> add(pbi.personInfo, ybi.year, month, new DetailInfo(0, U.secFromHours(pbi.months[month - 1]))))));
+    }
+
+    public synchronized void add(AccountYearMonthInfo other) {
+        other.map.forEach((person, ym) -> ym.forEach((year, mm) -> mm.forEach((month, detail) -> add(person, year, month, detail))));
+    }
+
+    public synchronized void add(PersonInfo person, int year, int month, DetailInfo detail) {
+        Map<Integer, Map<Integer, DetailInfo>> m1         = map.computeIfAbsent(person, ab -> new HashMap<>());
+        Map<Integer, DetailInfo>               m2         = m1.computeIfAbsent(year, y -> new HashMap<>());
+        DetailInfo                             detailInfo = m2.computeIfAbsent(month, m -> new DetailInfo());
+        detailInfo.add(detail);
     }
 
     public Stream<Integer> getYears() {
@@ -34,43 +42,44 @@ public class AccountYearMonthInfo extends Info {
     }
 
     public List<PersonInfo> getPersonInfos() {
-        return personIndex.keySet().stream().toList();
+        return map.keySet().stream().toList();
     }
 
-    public long workSecFor(int year) {
+    public long secFor(int year, ToLongFunction<DetailInfo> f) {
         return map.values()
                 .stream()
                 .flatMapToLong(
-                        y -> y.getOrDefault(year, EMPTY_MAP)
+                        y -> y.getOrDefault(year, emptyMap())
                                 .values()
                                 .stream()
-                                .mapToLong(DetailInfo::secWorked)
+                                .mapToLong(f)
                 ).sum();
     }
 
-    public long workSecFor(int year, int month) {
+    public long secFor(int year, int month, ToLongFunction<DetailInfo> f) {
         return map.values()
                 .stream()
                 .mapToLong(
-                        y -> y.getOrDefault(year, EMPTY_MAP)
-                                .getOrDefault(month, DetailInfo.EMPTY)
-                                .secWorked()
+                        y -> f.applyAsLong(y.getOrDefault(year, emptyMap()).getOrDefault(month, EMPTY_DETAIL))
                 ).sum();
     }
 
-    public long workSecFor(PersonInfo personInfo, int year) {
-        return personIndex
-                .getOrDefault(personInfo, EMPTY_LIST)
+    public long secFor(PersonInfo personInfo, int year, ToLongFunction<DetailInfo> f) {
+        return map.getOrDefault(personInfo, emptyMap())
+                .getOrDefault(year, emptyMap())
+                .values()
                 .stream()
-                .flatMapToLong(ab -> map.get(ab)
-                        .getOrDefault(year, EMPTY_MAP)
-                        .values()
-                        .stream()
-                        .mapToLong(DetailInfo::secWorked))
+                .mapToLong(f)
                 .sum();
     }
 
+    public long secFor(PersonInfo personInfo, int year, int month, ToLongFunction<DetailInfo> f) {
+        return f.applyAsLong(map.getOrDefault(personInfo, emptyMap())
+                .getOrDefault(year, emptyMap())
+                .getOrDefault(month, EMPTY_DETAIL));
+    }
+
     public boolean notEmpty(int year) {
-        return workSecFor(year) != 0;
+        return secFor(year, d -> d.secWorked() + d.secBudget()) != 0;
     }
 }

@@ -1,11 +1,22 @@
 package nl.modelingvalue.timesheets.info;
 
-public class Info {
-    public String   id;
-    public int      index;
-    public Settings settings;
+import nl.modelingvalue.timesheets.SheetMaker;
 
-    public void init(Settings settings) {
-        this.settings = settings;
+public abstract class Info {
+    public String     id;
+    public int        index;
+    public SheetMaker sheetMaker;
+
+    public Info() {
+    }
+
+    public Info(PartInfo fromJson) {
+        id         = fromJson.id;
+        index      = fromJson.index;
+        sheetMaker = fromJson.sheetMaker;
+    }
+
+    public void init(SheetMaker sheetMaker) {
+        this.sheetMaker = sheetMaker;
     }
 }

@@ -1,4 +1,6 @@
 /out/
+/docs/
+/raws/
 /build/
 /.gradle/
 /*.html

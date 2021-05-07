@@ -1,35 +1,42 @@
 package nl.modelingvalue.timesheets.model;
 
+import static nl.modelingvalue.timesheets.util.Jql.DATE_FORMATTER;
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.ToLongFunction;
+
+import nl.modelingvalue.timesheets.info.DetailInfo;
+import nl.modelingvalue.timesheets.info.PersonInfo;
+import nl.modelingvalue.timesheets.util.U;
 
 @SuppressWarnings("unused")
 public class MonthModel extends Model<UserModel> {
-    public final int month;
+    public final PersonInfo person;
+    public final int        year;
+    public final int        month;
 
     public MonthModel(UserModel userModel, int month) {
         super(userModel);
-        this.month = month;
+        this.person = userModel.personInfo;
+        this.year   = userModel.parentModel.parentModel.year;
+        this.month  = month;
     }
 
-    public long getWorkedSec() {
-        return parentModel.parentModel.projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.workSecFor(parentModel.parentModel.parentModel.year, month)).sum();
-    }
-
-    public long getBudgetSec() {
-        return BUDGET_PLACEHOLDER;
+    private long getSec(ToLongFunction<DetailInfo> f) {
+        return parentModel.parentModel.projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(person, year, month, f)).sum();
     }
 
     public String getWorked() {
-        return hoursFromSec(getWorkedSec());
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
     }
 
     public String getBudget() {
-        return hoursFromSec(getBudgetSec());
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
     }
 
     public String getUrl() {
-        LocalDate firstDay = LocalDate.of(parentModel.parentModel.parentModel.year, month, 1);
+        LocalDate firstDay = LocalDate.of(year, month, 1);
         LocalDate lastDay  = firstDay.plusMonths(1).minusDays(1);
 
         String       root           = parentModel.parentModel.projectInfos.stream().filter(pi -> pi.serverInfo != null).findFirst().orElseThrow().serverInfo.url;

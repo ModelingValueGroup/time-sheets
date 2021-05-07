@@ -3,12 +3,17 @@ package nl.modelingvalue.timesheets.model;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.ToLongFunction;
 import java.util.stream.IntStream;
 
+import nl.modelingvalue.timesheets.Config;
+import nl.modelingvalue.timesheets.info.DetailInfo;
 import nl.modelingvalue.timesheets.info.ProjectInfo;
 import nl.modelingvalue.timesheets.util.Jql;
+import nl.modelingvalue.timesheets.util.U;
 
 @SuppressWarnings("unused")
 public class TableModel extends Model<PageModel> {
@@ -32,7 +37,7 @@ public class TableModel extends Model<PageModel> {
     public String getWriteTimeUrl() {
         Optional<ProjectInfo> activeProjectOpt = projectInfos.stream().filter(pi -> pi.serverInfo != null).findFirst();
         if (activeProjectOpt.isEmpty()) {
-            return NOT_YET_IMPLEMENTED_URL;
+            return Config.NOT_YET_IMPLEMENTED_URL;
         } else {
             String       url          = activeProjectOpt.get().serverInfo.url;
             List<String> projectKeys  = projectInfos.stream().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).toList();
@@ -51,6 +56,7 @@ public class TableModel extends Model<PageModel> {
                 .stream()
                 .flatMap(pi -> pi.accountYearMonthInfo.getPersonInfos().stream())
                 .distinct()
+                .sorted(Comparator.comparing(u -> u.id))
                 .map(pi -> new UserModel(this, pi))
                 .toList();
     }
@@ -59,28 +65,24 @@ public class TableModel extends Model<PageModel> {
         return name;
     }
 
-    private long getTotalSec() {
-        return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.workSecFor(parentModel.year)).sum();
-    }
-
-    public String getTotal() {
-        return hoursFromSec(getTotalSec());
-    }
-
-    private long getBudgetSec() {
-        return BUDGET_PLACEHOLDER;
-    }
-
-    public String getBudget() {
-        return hoursFromSec(getBudgetSec());
+    private long getSec(ToLongFunction<DetailInfo> f) {
+        return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, f)).sum();
     }
 
     private long getBudgetLeftSec() {
-        return getBudgetSec() - getTotalSec();
+        return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
+    }
+
+    public String getTotal() {
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
+    }
+
+    public String getBudget() {
+        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
     }
 
     public String getBudgetLeft() {
-        return hoursFromSec(getBudgetLeftSec());
+        return U.hoursFromSecFormatted(getBudgetLeftSec());
     }
 
     public String getBudgetLeftClass() {
@@ -92,7 +94,7 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getUrl() {
-        return NOT_YET_IMPLEMENTED_URL;
+        return Config.NOT_YET_IMPLEMENTED_URL;
     }
 
     public class MonthColumn {
@@ -101,39 +103,35 @@ public class TableModel extends Model<PageModel> {
 
         public MonthColumn(int month) {
             this.month = month;
-            this.name  = MONTH_NAMES[month - 1];
+            this.name  = Config.MONTH_NAMES[month - 1];
         }
 
         public String getName() {
             return name;
         }
 
-        public long getTotalSec() {
-            return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.workSecFor(parentModel.year, month)).sum();
-        }
-
-        public long getBudgetSec() {
-            return BUDGET_PLACEHOLDER;
+        private long getSec(ToLongFunction<DetailInfo> f) {
+            return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, month, f)).sum();
         }
 
         public long getBudgetLeftSec() {
-            return getBudgetSec() - getTotalSec();
+            return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
         }
 
         public long getBudgetLeftNowSec() {
-            return getBudgetSec() - getTotalSec();
+            return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
         }
 
         public String getTotal() {
-            return hoursFromSec(getTotalSec());
+            return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
         }
 
         public String getBudget() {
-            return hoursFromSec(getBudgetSec());
+            return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
         }
 
         public String getBudgetLeft() {
-            return hoursFromSec(getBudgetLeftSec());
+            return U.hoursFromSecFormatted(getBudgetLeftSec());
         }
 
         public String getBudgetLeftClass() {
@@ -145,7 +143,7 @@ public class TableModel extends Model<PageModel> {
         }
 
         public String getBudgetLeftNow() {
-            return hoursFromSec(getBudgetLeftNowSec());
+            return U.hoursFromSecFormatted(getBudgetLeftNowSec());
         }
 
         public String getBudgetLeftNowClass() {

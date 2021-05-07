@@ -2,18 +2,20 @@ package nl.modelingvalue.timesheets.info;
 
 import java.util.HashMap;
 
+import nl.modelingvalue.timesheets.SheetMaker;
+
 public class YearBudgetInfo extends HashMap<String, PersonBudgetInfo> {
-    public  String   id;
-    public  int      index;
-    public  int      year;
+    public  String     id;
+    public  int        index;
+    public  int        year;
     //
-    private Settings settings;
+    private SheetMaker sheetMaker;
 
-    public void init(Settings settings) {
-        this.settings = settings;
-        year          = parseId();
+    public void init(SheetMaker sheetMaker) {
+        this.sheetMaker = sheetMaker;
+        year            = parseId();
 
-        values().forEach(v -> v.init(settings));
+        values().forEach(v -> v.init(sheetMaker));
     }
 
     private int parseId() {

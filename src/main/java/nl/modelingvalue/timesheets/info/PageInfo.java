@@ -4,31 +4,47 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import nl.modelingvalue.timesheets.util.U;
+import de.micromata.jira.rest.core.domain.ProjectBean;
+import nl.modelingvalue.timesheets.SheetMaker;
 
-public class PageInfo extends Info {
-    public String            password;
-    public List<String>      projectNames = new ArrayList<>();
-    public List<String>      pageNames    = new ArrayList<>();
-    //
-    public List<ProjectInfo> projectInfos;
-    public List<PageInfo>    pageInfos;
+public class PageInfo extends PartInfo {
+    public  List<PartInfo> partInfos = new ArrayList<>();
+    private boolean        accumulated;
 
-    public void init(Settings settings) {
-        super.init(settings);
-        projectInfos = projectNames.stream().map(name -> U.errorIfNull(settings.projects.get(name), "project", name)).toList();
-        pageInfos    = pageNames.stream().map(name -> U.errorIfNull(settings.pages.get(name), "page", name)).toList();
+    public PageInfo() {
     }
 
-    public Stream<Integer> getYears() {
-        return projectInfos.stream().flatMap(ProjectInfo::getYears).distinct();
+    public PageInfo(PartInfo partInfo) {
+        super(partInfo);
+    }
+
+    public void init(SheetMaker sheetMaker) {
+        super.init(sheetMaker);
+        partInfos = parts.stream().map(sheetMaker::mustFindPart).toList();
     }
 
     public Stream<ProjectInfo> allProjectInfosDeep() {
-        return Stream.concat(projectInfos.stream(), pageInfos.stream().flatMap(PageInfo::allProjectInfosDeep)).distinct();
+        return partInfos.stream().flatMap(PartInfo::allProjectInfosDeep);
     }
 
-    public boolean notEmpty(int year) {
-        return allProjectInfosDeep().anyMatch(pi -> pi.accountYearMonthInfo.notEmpty(year));
+    public Stream<PartInfo> allPartInfos() {
+        return partInfos.stream();
+    }
+
+    public void matchPartsToProjects(List<ProjectBean> allProjectBeans) {
+        List<ProjectBean> matching = allProjectBeans.stream().filter(pb -> pb.getKey().equals(id)).toList();
+        if (!matching.isEmpty()) {
+            throw new Error("config problem: the page " + id + " matches a project");
+        }
+    }
+
+    public void accumulateSubs() {
+        if (!accumulated) {
+            accumulated = true;
+            partInfos.forEach(pi -> {
+                pi.accumulateSubs();
+                accountYearMonthInfo.add(pi.accountYearMonthInfo);
+            });
+        }
     }
 }

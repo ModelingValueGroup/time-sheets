@@ -1,9 +1,9 @@
 package nl.modelingvalue.timesheets.model;
 
-import nl.modelingvalue.timesheets.info.Settings;
+import nl.modelingvalue.timesheets.SheetMaker;
 
 public class IndexModel {
-    public IndexModel(Settings settings) {
+    public IndexModel(SheetMaker sheetMaker) {
     }
 
     public void generate() {

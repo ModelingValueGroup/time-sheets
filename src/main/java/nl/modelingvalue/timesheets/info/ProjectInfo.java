@@ -5,6 +5,7 @@ import static de.micromata.jira.rest.core.jql.EField.PROJECT;
 import static de.micromata.jira.rest.core.jql.EOperator.EQUALS;
 import static de.micromata.jira.rest.core.jql.EOperator.GREATER_THAN_EQUALS;
 import static java.lang.System.currentTimeMillis;
+import static nl.modelingvalue.timesheets.util.Jql.DATE_FORMATTER;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
 import static nl.modelingvalue.timesheets.util.LogAccu.info;
 import static nl.modelingvalue.timesheets.util.LogAccu.log;
@@ -12,9 +13,8 @@ import static nl.modelingvalue.timesheets.util.Pool.POOL;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
 import static nl.modelingvalue.timesheets.util.Pool.waitFor;
 
-import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -28,30 +28,31 @@ import de.micromata.jira.rest.core.jql.EField;
 import de.micromata.jira.rest.core.jql.JqlBuilder;
 import de.micromata.jira.rest.core.jql.JqlBuilder.JqlKeyword;
 import de.micromata.jira.rest.core.jql.JqlSearchBean;
+import nl.modelingvalue.timesheets.Config;
+import nl.modelingvalue.timesheets.SheetMaker;
 import nl.modelingvalue.timesheets.util.Yielder;
 
-public class ProjectInfo extends Info {
-    private static final boolean IGNORE_BEFORE_2020 = Boolean.getBoolean("IGNORE_BEFORE_2020");
+public class ProjectInfo extends PartInfo {
+    public ProjectBean projectBean;
+    public ServerInfo  serverInfo;
 
-    public Map<String, YearBudgetInfo> budgets = new HashMap<>();
-    //
-    public ProjectBean                 projectBean;
-    public ServerInfo                  serverInfo;
-    public AccountYearMonthInfo        accountYearMonthInfo;
-
-    public void init(Settings settings) {
-        super.init(settings);
-        accountYearMonthInfo = new AccountYearMonthInfo();
-        budgets.values().forEach(v -> v.init(settings));
-        accountYearMonthInfo.init(settings);
+    public ProjectInfo() {
     }
 
-    public void init2(List<ProjectBean> allProjectBeans) {
+    public ProjectInfo(PartInfo fromJson) {
+        super(fromJson);
+    }
+
+    public void init(SheetMaker sheetMaker) {
+        super.init(sheetMaker);
+    }
+
+    public void matchPartsToProjects(List<ProjectBean> allProjectBeans) {
         List<ProjectBean> matching = allProjectBeans.stream().filter(pb -> pb.getKey().equals(id)).toList();
         switch (matching.size()) {
         case 1 -> {
             projectBean = matching.get(0);
-            serverInfo  = settings.getServerBucketFor(projectBean);
+            serverInfo  = sheetMaker.getServerBucketFor(projectBean);
         }
         case 0 -> err("no project matches '" + id + "'");
         default -> err("multiple projects match '" + id + "': " + matching.stream().map(pb -> pb.getKey() + "=(" + pb.getName() + ")").toList());
@@ -62,10 +63,23 @@ public class ProjectInfo extends Info {
         return projectBean;
     }
 
+    public Stream<ProjectInfo> allProjectInfosDeep() {
+        return Stream.of(this);
+    }
+
+    public Stream<PartInfo> allPartInfos() {
+        return Stream.of(this);
+    }
+
     public void downloadAllWorkItems() {
         if (serverInfo != null) {
-            parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> accountYearMonthInfo.add(wb)));
-            accountYearMonthInfo.makePersonIndex();
+            parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> {
+                PersonInfo person = sheetMaker.findPersonOrCreate(wb.getAuthor());
+                int        year   = wb.getStartedDate().getYear();
+                int        month  = wb.getStartedDate().getMonthValue();
+                long       sec    = wb.getTimeSpentSeconds();
+                accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
+            }));
         }
     }
 
@@ -92,8 +106,8 @@ public class ProjectInfo extends Info {
 
     private String buildAllIssuesJql() {
         JqlKeyword jqlKeyword = new JqlBuilder().addCondition(PROJECT, EQUALS, projectBean.getName());
-        if (IGNORE_BEFORE_2020) {
-            jqlKeyword = jqlKeyword.and().addCondition(EField.CREATED, GREATER_THAN_EQUALS, "2020/1/1");
+        if (Config.CURRENT_YEAR_ONLY) {
+            jqlKeyword = jqlKeyword.and().addCondition(EField.CREATED, GREATER_THAN_EQUALS, LocalDate.now().withDayOfYear(1).format(DATE_FORMATTER));
         }
         return jqlKeyword.build();
     }
@@ -110,8 +124,8 @@ public class ProjectInfo extends Info {
             if (worklogBean.getMaxResults() < worklogBean.getTotal()) {
                 throw new Error("did not get all worklogs!!!");
             }
-            if (IGNORE_BEFORE_2020) {
-                worklogs.removeIf(web->web.getStartedDate().getYear()<2020);
+            if (Config.CURRENT_YEAR_ONLY) {
+                worklogs.removeIf(web -> web.getStartedDate().getYear() < LocalDate.now().getYear());
             }
             yielder.yieldz(worklogs);
             log("             ... found " + worklogs.size() + " worklogs in " + fullName(issue));
@@ -122,9 +136,5 @@ public class ProjectInfo extends Info {
 
     private String fullName(IssueBean issue) {
         return serverInfo.id + "." + projectBean.getKey() + (issue == null ? "" : "." + issue.getKey());
-    }
-
-    public Stream<Integer> getYears() {
-        return accountYearMonthInfo.getYears();
     }
 }
