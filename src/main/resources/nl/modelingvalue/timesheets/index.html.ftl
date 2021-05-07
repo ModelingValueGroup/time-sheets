@@ -1,4 +1,5 @@
 <#import "subs.ftl" as subs>
+<!DOCTYPE html>
 <html>
 <head>
     <title>MVG timesheets</title>

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,8 @@ public class IndexModel extends Model<IndexModel> {
                     .collect(Collectors.groupingBy(a1 -> a1[1]))
                     .entrySet()
                     .stream()
-                    .map(e -> new IndexPageModel(e.getKey(), e.getValue().stream().map(a -> a[0]).toList()))
+                    .map(e -> new IndexPageModel(e.getKey(), e.getValue().stream().map(a -> a[0]).sorted(Comparator.reverseOrder()).toList()))
+                    .sorted(Comparator.comparing(m -> m.name))
                     .toList();
 
         } catch (IOException e) {
