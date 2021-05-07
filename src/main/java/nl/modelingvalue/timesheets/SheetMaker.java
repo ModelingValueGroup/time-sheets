@@ -164,13 +164,13 @@ public class SheetMaker {
     }
 
     public void generateAll() {
-        publish.partInfos.forEach(pi -> {
-            pi.getYears().filter(y -> !Config.CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y).forEach(year -> {
-                String outFile = String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
-                info("generating " + outFile);
-                FreeMarker.generate("page.html", outFile, new PageModel(pi, year), publish.password);
-            });
-        });
+        publish.partInfos.forEach(pi -> pi.getYears()
+                .filter(y -> !Config.CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
+                .forEach(year -> {
+                    String outFile = String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
+                    info("generating " + outFile);
+                    FreeMarker.generate("page.html", outFile, new PageModel(pi, year), publish.password);
+                }));
         new IndexModel(this).generate();
     }
 }
