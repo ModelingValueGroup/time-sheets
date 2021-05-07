@@ -1,5 +1,6 @@
 package nl.modelingvalue.timesheets;
 
+import static nl.modelingvalue.timesheets.Config.INDEX_FILENAME;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
 import static nl.modelingvalue.timesheets.util.LogAccu.info;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
@@ -126,7 +127,7 @@ public class SheetMaker {
     }
 
     private static SheetMaker read(Path f) {
-        System.err.println("...reading " + f.toAbsolutePath());
+        info("...reading " + f.toAbsolutePath());
         try {
             return GsonUtils.withSpecials().fromJson(new JsonReader(Files.newBufferedReader(f)), SETTINGS_TYPE);
         } catch (IOException e) {
@@ -166,11 +167,19 @@ public class SheetMaker {
     public void generateAll() {
         publish.partInfos.forEach(pi -> pi.getYears()
                 .filter(y -> !Config.CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
-                .forEach(year -> {
-                    String outFile = String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
-                    info("generating " + outFile);
-                    FreeMarker.generate("page.html", outFile, new PageModel(pi, year), publish.password);
-                }));
-        new IndexModel(this).generate();
+                .forEach(year -> generate(pi, year)));
+
+        generate(new IndexModel());
+    }
+
+    private void generate(PartInfo pi, Integer year) {
+        String outFile = String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
+        info("generating " + outFile);
+        FreeMarker.generate("page.html", outFile, new PageModel(pi, year), publish.password);
+    }
+
+    private void generate(IndexModel model) {
+        info("generating " + INDEX_FILENAME);
+        FreeMarker.generate("index.html", INDEX_FILENAME, model, publish.password);
     }
 }

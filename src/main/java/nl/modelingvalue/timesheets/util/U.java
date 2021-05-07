@@ -65,9 +65,9 @@ public class U {
             if (Files.isDirectory(fd)) {
                 return Files.list(fd).filter(f -> defaultNamePat.matcher(f.getFileName().toString()).matches());
             }
-            System.err.println("WARNING: not a file or dir: " + fd.toAbsolutePath());
+            LogAccu.info("not a file or dir: " + fd.toAbsolutePath());
         } catch (IOException e) {
-            System.err.println("WARNING: dir " + fd.toAbsolutePath() + " can not be scanned for sheetMaker files (" + e + ")");
+            LogAccu.info("dir " + fd.toAbsolutePath() + " can not be scanned for sheetMaker files (" + e + ")");
         }
         return Stream.empty();
     }

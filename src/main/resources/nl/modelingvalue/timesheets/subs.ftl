@@ -71,6 +71,51 @@
 			text-decoration  : none;
 			padding          : 3px;
 		}
+		.terminal {
+			background-color : black;
+			background-image : radial-gradient(rgba(0, 150, 0, 0.75), black 120%);
+			display          : block;
+			overflow         : auto;
+			color            : white;
+			padding          : 20px;
+			margin           : 5px 20px 20px 50px;
+			font             : 1.1rem Inconsolata, monospace;
+		}
+		.err {
+			color : orange;
+		}
+		.log {
+			color : white;
+		}
+		.info {
+			color : greenyellow;
+		}
+		ul {
+			font             : 1.1rem Inconsolata, monospace;
+			list-style-type  : none;
+			margin           : 0;
+			padding          : 0;
+			overflow         : hidden;
+			background-color : #333333;
+			margin-bottom    : 2px;
+		}
+		li {
+			float : left;
+		}
+		li a {
+			display         : block;
+			color           : white;
+			text-align      : center;
+			padding         : 14px 16px;
+			text-decoration : none;
+		}
+		li a:hover:not(.active) {
+			background-color : #111111;
+		}
+		.active {
+			background-color : #4caf50;
+			width            : 6em;
+		}
     </style>
 </#macro>
 

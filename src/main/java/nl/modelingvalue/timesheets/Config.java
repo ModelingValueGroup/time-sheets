@@ -7,6 +7,7 @@ public class Config {
     public static final boolean      CURRENT_YEAR_ONLY            = Boolean.getBoolean("CURRENT_YEAR_ONLY");
     //
     public static final String       TIME_SHEET_FILENAME_TEMPLATE = System.getProperty("TIME_SHEET_FILENAME_TEMPLATE", "timesheet-%4d-%s.html");
+    public static final String       INDEX_FILENAME               = "index.html";
     public static final String       RAW_DIRNAME                  = System.getProperty("RAW_DIRNAME", "raws");
     public static final String       PUBLIC_DIRNAME               = System.getProperty("PUBLIC_DIRNAME", "docs");
     public static final Pattern      DEFAULT_NAME_PAT             = Pattern.compile("^time-sheets-.*.json$");
