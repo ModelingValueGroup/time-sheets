@@ -112,6 +112,7 @@ public class SheetMaker {
         merge(persons, s2.persons, "persons");
         merge(teams, s2.teams, "teams");
         merge(parts, s2.parts, "parts");
+        publish = publish != null ? publish : s2.publish;
         return this;
     }
 
