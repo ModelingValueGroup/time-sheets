@@ -2,12 +2,12 @@ package nl.modelingvalue.timesheets.util;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -28,14 +28,26 @@ public class U {
 
     static String readResource(String name) {
         try {
-            URL resource = PageEncryptWrapper.class.getResource(name);
-            if (resource == null) {
+            InputStream stream = PageEncryptWrapper.class.getResourceAsStream(name);
+            if (stream == null) {
                 throw new Error("wrapper source not found");
             }
-            return Files.readString(Paths.get(resource.toURI()));
-        } catch (IOException | URISyntaxException e) {
+            return readInputStreamAsString(stream);
+        } catch (IOException e) {
             throw new Error("could not read wrapper source from resource", e);
         }
+    }
+
+    public static String readInputStreamAsString(InputStream in) throws IOException {
+        BufferedInputStream   bis    = new BufferedInputStream(in);
+        ByteArrayOutputStream buf    = new ByteArrayOutputStream();
+        int                   result = bis.read();
+        while (result != -1) {
+            byte b = (byte) result;
+            buf.write(b);
+            result = bis.read();
+        }
+        return buf.toString();
     }
 
     public static <T> T errorIfNull(T o, String role, String name) {
