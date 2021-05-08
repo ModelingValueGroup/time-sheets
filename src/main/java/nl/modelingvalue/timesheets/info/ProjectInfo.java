@@ -77,13 +77,15 @@ public class ProjectInfo extends PartInfo {
         if (serverInfo != null) {
             parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> {
                 PersonInfo person = sheetMaker.findPersonOrCreate(wb.getAuthor());
-                int        year   = wb.getStartedDate().getYear();
-                int        month  = wb.getStartedDate().getMonthValue();
-                long       sec    = wb.getTimeSpentSeconds();
-                if (U.hoursFromSec(sec) < 0.25) {
-                    LogAccu.info("extremely short work item detected: " + sec + " sec for " + person.id + " issue " + issue.getKey());
+                if (!person.ignore) {
+                    int  year  = wb.getStartedDate().getYear();
+                    int  month = wb.getStartedDate().getMonthValue();
+                    long sec   = wb.getTimeSpentSeconds();
+                    if (U.hoursFromSec(sec) < 0.25) {
+                        LogAccu.err("extremely short work item detected: " + sec + " sec for " + person.id + " issue " + issue.getKey()+", probably a human entry error");
+                    }
+                    accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
-                accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
             }));
         }
     }

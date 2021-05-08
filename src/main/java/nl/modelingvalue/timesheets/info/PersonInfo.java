@@ -7,6 +7,7 @@ import nl.modelingvalue.timesheets.SheetMaker;
 import nl.modelingvalue.timesheets.util.U;
 
 public class PersonInfo extends Info {
+    public  boolean ignore;
     public  String  fullName;
     public  String  regexp;
     //
