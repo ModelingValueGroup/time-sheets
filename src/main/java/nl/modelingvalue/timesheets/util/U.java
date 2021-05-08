@@ -73,11 +73,14 @@ public class U {
     }
 
     public static long secFromHours(double hours) {
-        return (long) (hours * 4.0) * 60 * 60 / 4;
+        long quarters = Math.round(hours * 4.0);
+        return quarters * (60 * 60 / 4);
     }
 
-    private static double hoursFromSec(long sec) {
-        return ((double) (sec * 4) / (60 * 60)) / 4.0;
+    public static double hoursFromSec(long sec) {
+        double dsec     = sec;
+        double quarters = Math.round(dsec * (4.0 / (60.0 * 60.0)));
+        return quarters / 4.0;
     }
 
     public static String hoursFromSecFormatted(long totalSec) {

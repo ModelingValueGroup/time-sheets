@@ -30,6 +30,8 @@ import de.micromata.jira.rest.core.jql.JqlBuilder.JqlKeyword;
 import de.micromata.jira.rest.core.jql.JqlSearchBean;
 import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.util.LogAccu;
+import nl.modelingvalue.timesheets.util.U;
 import nl.modelingvalue.timesheets.util.Yielder;
 
 public class ProjectInfo extends PartInfo {
@@ -78,6 +80,9 @@ public class ProjectInfo extends PartInfo {
                 int        year   = wb.getStartedDate().getYear();
                 int        month  = wb.getStartedDate().getMonthValue();
                 long       sec    = wb.getTimeSpentSeconds();
+                if (U.hoursFromSec(sec) < 0.25) {
+                    LogAccu.info("extremely short work item detected: " + sec + " sec for " + person.id + " issue " + issue.getKey());
+                }
                 accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
             }));
         }

@@ -153,12 +153,27 @@ public class SheetMaker {
     }
 
     public PersonInfo findPersonOrCreate(AccountBean ab) {
+        return findPersonOrCreate(ab, false); // TODO: remove later
+    } // TODO: remove later
+
+    public PersonInfo findPersonOrCreate(AccountBean ab, boolean onlyChecking) { // TODO: remove later
         List<PersonInfo> matching = persons.values().stream().filter(personInfo -> personInfo.isMatch(ab)).toList();
         return switch (matching.size()) {
             case 1 -> matching.get(0);
             case 0 -> {
-                err("account '" + ab.getDisplayName() + "' does not match any person");
-                yield new PersonInfo(ab, this);
+                if (onlyChecking) { // TODO: remove later
+                    err("double check failed! (account " + ab.getDisplayName() + " did not match the second time!)"); // TODO: remove later
+                    yield null; // TODO: remove later
+                } else { // TODO: remove later
+                    err("account '" + ab.getDisplayName() + "' does not match any person");
+                    PersonInfo newPerson = new PersonInfo(ab, this);
+                    persons.put(newPerson.id, newPerson);
+                    PersonInfo doubleCheck = findPersonOrCreate(ab, true); // TODO: remove later
+                    if (newPerson != doubleCheck) { // TODO: remove later
+                        err("double check failed! (account " + ab.getDisplayName() + " matched another person: " + (doubleCheck == null ? "<null>" : doubleCheck.fullName) + "!)"); // TODO: remove later
+                    } // TODO: remove later
+                    yield newPerson;
+                } // TODO: remove later
             }
             default -> throw new Error("multiple persons match '" + ab.getDisplayName() + "': " + matching.stream().map(pi -> pi.id).toList());
         };

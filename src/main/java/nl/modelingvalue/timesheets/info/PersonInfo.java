@@ -30,7 +30,7 @@ public class PersonInfo extends Info {
             fullName = id;
         }
         if (regexp == null) {
-            regexp = "/" + id + "/";
+            regexp = "/" + Pattern.quote(id) + "/";
         }
         if (regexpPat == null) {
             regexpPat = U.cachePattern(regexp);
