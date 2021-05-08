@@ -84,6 +84,9 @@ public class ProjectInfo extends PartInfo {
                     if (U.hoursFromSec(sec) < 0.25) {
                         LogAccu.err("extremely short work item detected: " + sec + " sec for " + person.id + " issue " + issue.getKey() + ", probably a human entry error");
                     }
+                    if (person.id.equals("tom") && issue.getKey().equals("BD-52")) {
+                        err("@@ BD-52 tom: " + year + " " + month + " " + sec + " " + wb.getStartedDate());
+                    }
                     accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
             }));
@@ -118,8 +121,8 @@ public class ProjectInfo extends PartInfo {
             jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, updatedSince.format(DATE_FORMATTER));
         }
 
-//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, LocalDate.of(2017,1,1).minusMonths(1).format(DATE_FORMATTER)); //TODO remove later
-//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, LESS_THAN_EQUALS, LocalDate.of(2017,12,31).plusMonths(1).format(DATE_FORMATTER)); //TODO remove later
+//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, LocalDate.of(2017, 1, 1).minusMonths(1).format(DATE_FORMATTER)); //TODO remove later
+//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, LESS_THAN_EQUALS, LocalDate.of(2017, 12, 31).plusMonths(1).format(DATE_FORMATTER)); //TODO remove later
 
         return jqlKeyword.build();
     }
@@ -139,10 +142,10 @@ public class ProjectInfo extends PartInfo {
             if (Config.CURRENT_YEAR_ONLY) {
                 worklogs.removeIf(web -> web.getStartedDate().getYear() < LocalDate.now().getYear());
             }
-//            if (issue.getKey().equals("BD-52")) {
-//                System.err.println("BD-52 issues: " + worklogs.size());
-//                worklogs.forEach(w -> System.err.println("   - " + w.getStartedDate() + " " + w.getCreated() + " " + w.getTimeSpent() + " " + w.getTimeSpentSeconds() + " " + w.getAuthor().getDisplayName()));
-//            }
+            if (issue.getKey().equals("BD-52")) {
+                System.err.println("BD-52 issues: " + worklogs.size());
+                worklogs.forEach(w -> System.err.println("   - " + w.getStartedDate() + " " + w.getCreated() + " " + w.getTimeSpent() + " " + w.getTimeSpentSeconds() + " " + w.getAuthor().getDisplayName()));
+            }
             yielder.yieldz(worklogs);
             log("             ... found " + worklogs.size() + " worklogs in " + fullName(issue));
             info((currentTimeMillis() - t0) + " ms to download worklogs of " + fullName(issue));
