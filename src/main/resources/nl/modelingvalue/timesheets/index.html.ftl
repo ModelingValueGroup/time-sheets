@@ -17,9 +17,11 @@
     </ul>
 </#list>
 
+<div class="separator"></div>
+
 <#if err?size != 0>
-    <H2>Errors:</H2>
-    <div class="terminal err">
+    <div class="terminal-title">error</div>
+    <div class="terminal error">
         <#list err as s>
             ${nbsp(s)}<br>
         </#list>
@@ -27,7 +29,7 @@
 </#if>
 
 <#if info?size != 0>
-    <H2>Infos:</H2>
+    <div class="terminal-title">info</div>
     <div class="terminal info">
         <#list info as s>
             ${nbsp(s)}<br>
@@ -35,13 +37,24 @@
     </div>
 </#if>
 
-<#if log?size != 0>
-    <H2>Logs:</H2>
-    <div class="terminal log">
-        <#list log as s>
-            ${nbsp(s)}<br>
-        </#list>
-    </div>
+<#if traceToHtml()>
+    <#if trace?size != 0>
+        <div class="terminal-title">trace</div>
+        <div class="terminal trace">
+            <#list trace as s>
+                ${nbsp(s)}<br>
+            </#list>
+        </div>
+    </#if>
+
+    <#if debug?size != 0>
+        <div class="terminal-title">debug</div>
+        <div class="terminal debug">
+            <#list debug as s>
+                ${nbsp(s)}<br>
+            </#list>
+        </div>
+    </#if>
 </#if>
 
 </body>

@@ -7,8 +7,8 @@ import static de.micromata.jira.rest.core.jql.EOperator.GREATER_THAN_EQUALS;
 import static java.lang.System.currentTimeMillis;
 import static nl.modelingvalue.timesheets.util.Jql.DATE_FORMATTER;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
-import static nl.modelingvalue.timesheets.util.LogAccu.log;
+import static nl.modelingvalue.timesheets.util.LogAccu.trace;
+import static nl.modelingvalue.timesheets.util.LogAccu.debug;
 import static nl.modelingvalue.timesheets.util.Pool.POOL;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
 import static nl.modelingvalue.timesheets.util.Pool.waitFor;
@@ -75,7 +75,7 @@ public class ProjectInfo extends PartInfo {
 
     public void downloadAllWorkItems() {
         if (serverInfo != null) {
-            log(">>>>>>>>>>>> issues and worklogs   -  " + fullName());
+            debug(">>>>>>>>>>>> issues and worklogs   -  " + fullName());
             long t0 = currentTimeMillis();
             parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> {
                 PersonInfo person = sheetMaker.findPersonOrCreate(wb.getAuthor());
@@ -89,14 +89,14 @@ public class ProjectInfo extends PartInfo {
                     accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
             }));
-            info(String.format("%6d ms to download entries and worklogs of %s", currentTimeMillis() - t0, fullName()));
-            log("<<<<<<<<<<<< entries and worklogs   -  " + fullName());
+            trace(String.format("%6d ms to download entries and worklogs of %s", currentTimeMillis() - t0, fullName()));
+            debug("<<<<<<<<<<<< entries and worklogs   -  " + fullName());
         }
     }
 
     private Stream<IssueBean> getIssuesStream() {
         return Yielder.stream(POOL, yielder -> {
-            log(">>>>>>>>> issues    -  " + fullName());
+            debug(">>>>>>>>> issues    -  " + fullName());
             long t0 = currentTimeMillis();
 
             SearchClient    searchClient = serverInfo.getJiraRestClient().getSearchClient();
@@ -106,12 +106,12 @@ public class ProjectInfo extends PartInfo {
                 jqlSearchResult = waitFor(searchClient.searchIssues(jsb));
                 List<IssueBean> issues = jqlSearchResult.getIssues();
                 yielder.yieldz(issues);
-                log("         ... found " + issues.size() + " issues for " + fullName());
+                debug("         ... found " + issues.size() + " (more) issues for " + fullName());
                 jsb.setStartAt(jqlSearchResult.getStartAt() + issues.size());
             } while (jsb.getStartAt() < jqlSearchResult.getTotal());
 
-            info(String.format("%6d ms to download issues of %s", currentTimeMillis() - t0, fullName()));
-            log("<<<<<<<<< issues    -  " + fullName());
+            trace(String.format("%6d ms to download issues of %s", currentTimeMillis() - t0, fullName()));
+            debug("<<<<<<<<< issues    -  " + fullName());
         });
     }
 

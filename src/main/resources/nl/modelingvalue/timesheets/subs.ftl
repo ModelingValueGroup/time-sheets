@@ -6,17 +6,17 @@
 			font-family      : Verdana, serif;
 			font-weight      : bold;
 			font-size        : 12px;
-			color            : #444;
-			background-color : #fff;
+			color            : #444444;
+			background-color : lightyellow;
 		}
 		table {
 			text-align       : center;
 			font-family      : Verdana, serif;
 			font-weight      : bold;
 			font-size        : 12px;
-			color            : #444;
-			background-color : #fff;
-			border           : 1px solid #69C;
+			color            : #444444;
+			background-color : #ffffff;
+			border           : 1px solid #6699cc;
 			border-collapse  : collapse;
 			border-spacing   : 0;
 		}
@@ -25,20 +25,31 @@
 			padding-right    : 5px;
 			white-space      : nowrap;
 			text-align       : right;
-			border           : 1px solid #69C;
-			background-color : #BCD;
+			border           : 1px solid #6699cc;
+			background-color : #bbccdd;
 			width            : 5em;
 		}
 		.center {
 			text-align : center;
 		}
+		.left {
+			text-align : left;
+		}
+		.header {
+			font-weight : bold;
+			font-size   : 24px;
+			padding     : 10px;
+		}
 		.white {
-			background-color : #fff;
-			border-top       : 1px solid #eee;
-			border-left      : 1px solid #eee;
+			background-color : #ffffff;
+			border-top       : 1px solid #eeeeee;
+			border-left      : 1px solid #eeeeee;
 		}
 		.light {
-			background-color : #def;
+			background-color : #ddeeff;
+		}
+		.personName {
+			width : 10em;
 		}
 		.negative {
 			color : #ff4040;
@@ -47,7 +58,7 @@
 			width : 7em;
 		}
 		.notInTotals {
-			background-color : #aaa;
+			background-color : #aaaaaa;
 		}
 		.tooltipped {
 			position : relative;
@@ -55,7 +66,7 @@
 		}
 		.tooltipped:hover {
 			z-index          : 25;
-			background-color : #cfc;
+			background-color : #ccffcc;
 		}
 		.tooltipped span {
 			display : none;
@@ -65,9 +76,9 @@
 			position         : absolute;
 			top              : 1.2em;
 			left             : 1.2em;
-			border           : 1px solid #ba2;
-			background-color : #ff6;
-			color            : #000;
+			border           : 1px solid #bbaa22;
+			background-color : #ffff66;
+			color            : #000000;
 			text-align       : left;
 			text-decoration  : none;
 			padding          : 3px;
@@ -79,17 +90,32 @@
 			overflow         : auto;
 			color            : white;
 			padding          : 20px;
-			margin           : 5px 20px 20px 50px;
+			margin           : 0 0 20px 0;
 			font             : 1.1rem Inconsolata, monospace;
 		}
-		.err {
-			color : orange;
+		.terminal-title {
+			background-color : #4caf50;
+			display          : block;
+			overflow         : auto;
+			color            : white;
+			padding          : 14px 16px;
+			margin           : 20px 0 0 0;
+			font             : 1.1rem Verdana, serif;
+			font-weight      : bold;
+			width            : 6em;
+			text-align       : center;
 		}
-		.log {
-			color : white;
+		.error {
+			color : orangered;
 		}
 		.info {
 			color : greenyellow;
+		}
+		.trace {
+			color : powderblue;
+		}
+		.debug {
+			color : deepskyblue;
 		}
 		ul {
 			font             : 1.1rem Inconsolata, monospace;
@@ -111,11 +137,16 @@
 			text-decoration : none;
 		}
 		li a:hover:not(.active) {
-			background-color : #111111;
+			background-color : darkgreen;
 		}
 		.active {
 			background-color : #4caf50;
 			width            : 6em;
+			font-family      : Verdana, serif;
+			font-weight      : bold;
+		}
+		.separator {
+			height : 100px;
 		}
     </style>
 </#macro>
@@ -148,7 +179,7 @@
 <#macro table model>
     <table cellspacing='0'>
         <tr>
-            <td colspan=18 class=center>${model.name} - ${model.year}</td>
+            <td colspan=18 class="center header">${model.name} - ${model.year}</td>
         </tr>
         <tr>
             <td colspan=2 class=center>
@@ -172,8 +203,8 @@
         </tr>
         <#list model.users as u>
             <tr>
-                <td class=light></td>
-                <td class=light>${u.name}</td>
+                <td></td>
+                <td class="light personName">${u.name}</td>
                 <#list u.months as m>
                     <td class=white>
                     <span class=spend>
@@ -189,7 +220,7 @@
                 <td>${u.budget}</td>
                 <td>${u.worked}</td>
                 <td class='${u.budgetLeftClass}'>${u.budgetLeft}</td>
-                <td class='center light'>${u.name}</td>
+                <td class='left light personName'>${u.name}</td>
             </tr>
         </#list>
         <tr>

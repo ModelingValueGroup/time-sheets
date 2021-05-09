@@ -16,18 +16,6 @@ public class IndexModel extends Model<IndexModel> {
         super(null);
     }
 
-    public List<String> getInfo() {
-        return LogAccu.INSTANCE.info;
-    }
-
-    public List<String> getErr() {
-        return LogAccu.INSTANCE.err;
-    }
-
-    public List<String> getLog() {
-        return LogAccu.INSTANCE.log;
-    }
-
     public List<IndexPageModel> getPages() {
         Path dir = Paths.get(Config.PUBLIC_DIRNAME);
         try {
@@ -46,6 +34,26 @@ public class IndexModel extends Model<IndexModel> {
         } catch (IOException e) {
             throw new Error("unepected error during listing of dir " + dir);
         }
+    }
+
+    public boolean traceToHtml() {
+        return Config.TRACE_TO_HTML;
+    }
+
+    public List<String> getErr() {
+        return LogAccu.INSTANCE.err;
+    }
+
+    public List<String> getInfo() {
+        return LogAccu.INSTANCE.info;
+    }
+
+    public List<String> getTrace() {
+        return LogAccu.INSTANCE.trace;
+    }
+
+    public List<String> getDebug() {
+        return LogAccu.INSTANCE.debug;
     }
 
     public String href(String name, String year) {

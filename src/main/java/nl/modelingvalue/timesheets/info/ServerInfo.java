@@ -1,8 +1,8 @@
 package nl.modelingvalue.timesheets.info;
 
 import static java.lang.System.currentTimeMillis;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
-import static nl.modelingvalue.timesheets.util.LogAccu.log;
+import static nl.modelingvalue.timesheets.util.LogAccu.trace;
+import static nl.modelingvalue.timesheets.util.LogAccu.debug;
 import static nl.modelingvalue.timesheets.util.Pool.POOL;
 import static nl.modelingvalue.timesheets.util.Pool.waitFor;
 
@@ -48,16 +48,16 @@ public class ServerInfo extends Info {
     }
 
     public void connectAndAskProjects() {
-        log(">>> connect to " + id);
+        debug(">>> connect to " + id);
         long t0 = System.currentTimeMillis();
         if (ignore) {
-            log("    ... server " + id + " is disabled");
+            debug("    ... server " + id + " is disabled");
         } else {
             try {
                 final JiraRestClient jiraRestClient = new JiraRestClient(POOL);
                 int                  response       = jiraRestClient.connect(new URI(url), username, apiToken);
                 if (response != 200) {
-                    log("### connect to " + id + " failed (" + response + ")");
+                    debug("### connect to " + id + " failed (" + response + ")");
                     throw new Error("could not connect: response=" + response);
                 }
                 setJiraRestClient(jiraRestClient);
@@ -66,21 +66,21 @@ public class ServerInfo extends Info {
                 throw new Error("could not connect to " + url, e);
             }
         }
-        info(String.format("%6d ms to connect to %s" , currentTimeMillis() - t0, id));
-        log("<<< connect to " + id);
+        trace(String.format("%6d ms to connect to %s" , currentTimeMillis() - t0, id));
+        debug("<<< connect to " + id);
     }
 
     private Stream<ProjectBean> getProjectsStream() {
         return Yielder.stream(POOL, yielder -> {
-            log(">>>>>> projects of " + id);
+            debug(">>>>>> projects of " + id);
             long t0 = System.currentTimeMillis();
 
             CompletableFuture<List<ProjectBean>> allProjectsFuture = getJiraRestClient().getProjectClient().getAllProjects();
             List<ProjectBean>                    projectBeans      = waitFor(allProjectsFuture);
-            log("       ... found " + projectBeans.size() + " projects in " + id + ": " + projectBeans.stream().map(ProjectBean::getKey).toList());
+            debug("       ... found " + projectBeans.size() + " projects in " + id + ": " + projectBeans.stream().map(ProjectBean::getKey).toList());
             yielder.yieldz(projectBeans);
-            info(String.format("%6d ms to download projects for %s", currentTimeMillis() - t0, id));
-            log("<<<<<< projects of " + id);
+            trace(String.format("%6d ms to download projects for %s", currentTimeMillis() - t0, id));
+            debug("<<<<<< projects of " + id);
         });
     }
 }

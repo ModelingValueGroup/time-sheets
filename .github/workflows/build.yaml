@@ -17,7 +17,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: "setup JDK"
+      - name: "setup JDK 16"
         uses: actions/setup-java@v2
         with:
           java-version: 16
@@ -25,30 +25,32 @@ jobs:
 
       #### build #######################################################################################################
       - name: "build"
-        run:  |
+        run: |
           ./gradlew --stacktrace --scan build
 
       #### run #########################################################################################################
-      - name: "checkout"
+      - name: "checkout-test"
         uses: actions/checkout@v2
         with:
           repository: "ModelingValueGroup/time-sheets-mvg"
           token: "${{secrets.ALLREP_TOKEN}}"
           path: "time-sheets-mvg"
 
-      - name: "run"
+      - name: "test-run"
         run: |
           cd time-sheets-mvg
           echo '${{secrets.TIMESHEET_REPO_JSON}}' > time-sheets-secrets.json
           tar xf ../build/distributions/time-sheets.tar
           ###############################
           night="$(echo "$((3<$(date +%H)))" | sed 's/0/false/;s/1/true/')"
-          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE=true -DCURRENT_YEAR_ONLY=$night"
-          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE=true -DCURRENT_YEAR_ONLY=false" # TODO tmp always all
+          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE_TO_STDERR=true -DCURRENT_YEAR_ONLY=$night"
+          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE_TO_STDERR=true -DCURRENT_YEAR_ONLY=false" # TODO tmp
           time-sheets/bin/time-sheets time-sheets-secrets.json time-sheets-mvg.json
           ###############################
           rm -rf time-sheets time-sheets-secrets.json
 
+      - name: "gi-push"
+        run: |
           git config --global user.email "automation@modelingvalue.nl"
           git config --global user.name "Automation through Actions"
           git add raws/*.html

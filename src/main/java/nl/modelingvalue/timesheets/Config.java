@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class Config {
+    public static final boolean      TRACE_TO_STDERR              = Boolean.getBoolean("TRACE_TO_STDERR");
+    public static final boolean      TRACE_TO_HTML                = Boolean.getBoolean("TRACE_TO_HTML");
     public static final boolean      CURRENT_YEAR_ONLY            = Boolean.getBoolean("CURRENT_YEAR_ONLY");
     //
     public static final String       TIME_SHEET_FILENAME_TEMPLATE = System.getProperty("TIME_SHEET_FILENAME_TEMPLATE", "timesheet-%4d-%s.html");

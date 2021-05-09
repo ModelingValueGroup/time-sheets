@@ -1,6 +1,8 @@
 package nl.modelingvalue.timesheets.util;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static nl.modelingvalue.timesheets.util.LogAccu.err;
+import static nl.modelingvalue.timesheets.util.LogAccu.info;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,9 +67,9 @@ public class U {
             if (Files.isDirectory(fd)) {
                 return Files.list(fd).filter(f -> defaultNamePat.matcher(f.getFileName().toString()).matches());
             }
-            LogAccu.info("not a file or dir: " + fd.toAbsolutePath());
+            info("not a file or dir: " + fd.toAbsolutePath());
         } catch (IOException e) {
-            LogAccu.info("dir " + fd.toAbsolutePath() + " can not be scanned for sheetMaker files (" + e + ")");
+            err("dir " + fd.toAbsolutePath() + " can not be scanned for sheetMaker files (" + e + ")");
         }
         return Stream.empty();
     }
@@ -78,13 +80,11 @@ public class U {
     }
 
     public static double hoursFromSec(long sec) {
-        double dsec     = sec;
-        double quarters = Math.round(dsec * (4.0 / (60.0 * 60.0)));
+        double quarters = Math.round(sec * (4.0 / (60.0 * 60.0)));
         return quarters / 4.0;
     }
 
-    public static String hoursFromSecFormatted(long totalSec) {
-        return String.format("%4.2f", hoursFromSec(totalSec));
+    public static String hoursFromSecFormatted(long sec) {
+        return sec == 0 ? "&nbsp;&nbsp;" : String.format("%4.2f", hoursFromSec(sec));
     }
-
 }
