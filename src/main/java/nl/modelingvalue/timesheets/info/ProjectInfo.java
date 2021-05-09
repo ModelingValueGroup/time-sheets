@@ -82,10 +82,7 @@ public class ProjectInfo extends PartInfo {
                     int  month = wb.getStartedDate().getMonthValue();
                     long sec   = wb.getTimeSpentSeconds();
                     if (U.hoursFromSec(sec) < 0.25) {
-                        LogAccu.err("extremely short work item detected: " + sec + " sec for " + person.id + " issue " + issue.getKey() + ", probably a human entry error");
-                    }
-                    if (person.id.equals("tom") && issue.getKey().equals("BD-52")) {
-                        err("@@ BD-52 tom: " + year + " " + month + " " + sec + " " + wb.getStartedDate());
+                        LogAccu.err(String.format("extremely short work item detected: %5d sec for %12s issue %12s at %s (probably a human entry error!)", sec, person.id, issue.getKey(), wb.getStartedDate()));
                     }
                     accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
@@ -120,10 +117,10 @@ public class ProjectInfo extends PartInfo {
             LocalDate updatedSince = LocalDate.now().withDayOfYear(1).minusMonths(1); // be careful and ga back to one month before the beginning of this year
             jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, updatedSince.format(DATE_FORMATTER));
         }
-
-//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, LocalDate.of(2017, 1, 1).minusMonths(1).format(DATE_FORMATTER)); //TODO remove later
-//        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, LESS_THAN_EQUALS, LocalDate.of(2017, 12, 31).plusMonths(1).format(DATE_FORMATTER)); //TODO remove later
-
+        // for debugging a certain year:
+        //        int year = 2017;
+        //        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, GREATER_THAN_EQUALS, LocalDate.of(year, 1, 1).minusMonths(1).format(DATE_FORMATTER));
+        //        jqlKeyword = jqlKeyword.and().addCondition(EField.WORKLOG_DATE, LESS_THAN_EQUALS , LocalDate.of(year, 12, 31).plusMonths(1).format(DATE_FORMATTER));
         return jqlKeyword.build();
     }
 

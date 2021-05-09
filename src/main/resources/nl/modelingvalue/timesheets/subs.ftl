@@ -192,14 +192,6 @@
             </tr>
         </#list>
         <tr>
-            <td colspan=2>budget</td>
-            <#list model.months as m>
-                <td>${m.budget}</td>
-            </#list>
-            <td>${model.budget}</td>
-            <td colspan=3></td>
-        </tr>
-        <tr>
             <td colspan=2>spend:</td>
             <#list model.months as m>
                 <td class='monTotal'>${m.total}</td>
@@ -207,6 +199,14 @@
             <td></td>
             <td>${model.total}</td>
             <td colspan=2></td>
+        </tr>
+        <tr>
+            <td colspan=2>budget</td>
+            <#list model.months as m>
+                <td>${m.budget}</td>
+            </#list>
+            <td>${model.budget}</td>
+            <td colspan=3></td>
         </tr>
         <tr>
             <td colspan=2>left:</td>
