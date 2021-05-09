@@ -43,8 +43,8 @@ jobs:
           tar xf ../build/distributions/time-sheets.tar
           ###############################
           night="$(echo "$((3<$(date +%H)))" | sed 's/0/false/;s/1/true/')"
-          export TIME_SHEETS_OPTS="-DCURRENT_YEAR_ONLY=$night -DTRACE=true"
-          export TIME_SHEETS_OPTS="-DCURRENT_YEAR_ONLY=false -DTRACE=true" # TODO tmp always all
+          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE=true -DCURRENT_YEAR_ONLY=$night"
+          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE=true -DCURRENT_YEAR_ONLY=false" # TODO tmp always all
           time-sheets/bin/time-sheets time-sheets-secrets.json time-sheets-mvg.json
           ###############################
           rm -rf time-sheets time-sheets-secrets.json
