@@ -84,7 +84,7 @@ public class ProjectInfo extends PartInfo {
                     int  month = wb.getStartedDate().getMonthValue();
                     long sec   = wb.getTimeSpentSeconds();
                     if (U.hoursFromSec(sec) < 0.25) {
-                        LogAccu.err(String.format("extremely short work item detected: %5d sec for %12s issue %12s at %s (probably a human entry error!)", sec, person.id, issue.getKey(), wb.getStartedDate()));
+                        LogAccu.err(String.format("extremely short work item detected: %5d sec for %-12s issue %-12s at %s (probably a human entry error!)", sec, person.id, issue.getKey(), wb.getStartedDate()));
                     }
                     accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
