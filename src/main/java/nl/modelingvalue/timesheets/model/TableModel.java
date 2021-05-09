@@ -65,20 +65,32 @@ public class TableModel extends Model<PageModel> {
         return name;
     }
 
+    public boolean hasBudget() {
+        return 0 < getSecBudget();
+    }
+
     private long getSec(ToLongFunction<DetailInfo> f) {
         return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, f)).sum();
     }
 
-    private long getBudgetLeftSec() {
-        return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
+    private long getSecWorked() {
+        return getSec(DetailInfo::secWorked);
     }
 
-    public String getTotal() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
+    private long getSecBudget() {
+        return getSec(DetailInfo::secBudget);
+    }
+
+    private long getBudgetLeftSec() {
+        return getSecBudget() - getSecWorked();
+    }
+
+    public String getWorked() {
+        return U.hoursFromSecFormatted(getSecWorked());
     }
 
     public String getBudget() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
+        return U.hoursFromSecFormatted(getSecBudget());
     }
 
     public String getBudgetLeft() {
@@ -114,24 +126,36 @@ public class TableModel extends Model<PageModel> {
             return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, month, f)).sum();
         }
 
+        private long getSecWorked() {
+            return getSec(DetailInfo::secWorked);
+        }
+
+        private long getSecBudget() {
+            return getSec(DetailInfo::secBudget);
+        }
+
         public long getBudgetLeftSec() {
-            return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
+            return getSecBudget() - getSecWorked();
         }
 
         public long getBudgetLeftNowSec() {
-            return getSec(DetailInfo::secBudget) - getSec(DetailInfo::secWorked);
+            return getSecBudget() - getSecWorked();
         }
 
-        public String getTotal() {
-            return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
+        public String getWorked() {
+            return U.hoursFromSecFormatted(getSecWorked());
         }
 
         public String getBudget() {
-            return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
+            return U.hoursFromSecFormatted(getSecBudget());
         }
 
         public String getBudgetLeft() {
             return U.hoursFromSecFormatted(getBudgetLeftSec());
+        }
+
+        public String getBudgetLeftNow() {
+            return U.hoursFromSecFormatted(getBudgetLeftNowSec());
         }
 
         public String getBudgetLeftClass() {
@@ -140,10 +164,6 @@ public class TableModel extends Model<PageModel> {
                 classes.add("negative");
             }
             return String.join(" ", classes);
-        }
-
-        public String getBudgetLeftNow() {
-            return U.hoursFromSecFormatted(getBudgetLeftNowSec());
         }
 
         public String getBudgetLeftNowClass() {

@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="" type="nl.modelingvalue.timesheets.model.IndexModel" -->
 <#import "subs.ftl" as subs>
 <!DOCTYPE html>
 <html>
@@ -20,7 +21,7 @@
     <H2>Errors:</H2>
     <div class="terminal err">
         <#list err as s>
-            ${s}<br>
+            ${nbsp(s)}<br>
         </#list>
     </div>
 </#if>
@@ -29,7 +30,7 @@
     <H2>Infos:</H2>
     <div class="terminal info">
         <#list info as s>
-            ${s}<br>
+            ${nbsp(s)}<br>
         </#list>
     </div>
 </#if>
@@ -38,7 +39,7 @@
     <H2>Logs:</H2>
     <div class="terminal log">
         <#list log as s>
-            ${s}<br>
+            ${nbsp(s)}<br>
         </#list>
     </div>
 </#if>

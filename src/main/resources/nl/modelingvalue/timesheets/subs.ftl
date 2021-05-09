@@ -1,3 +1,4 @@
+<#--noinspection CssUnusedSymbol-->
 <#macro css>
     <style type="text/css">
 		body {
@@ -194,10 +195,10 @@
         <tr>
             <td colspan=2>spend:</td>
             <#list model.months as m>
-                <td class='monTotal'>${m.total}</td>
+                <td class='monTotal'>${m.worked}</td>
             </#list>
             <td></td>
-            <td>${model.total}</td>
+            <td>${model.worked}</td>
             <td colspan=2></td>
         </tr>
         <tr>

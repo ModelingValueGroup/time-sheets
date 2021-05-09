@@ -66,7 +66,7 @@ public class ServerInfo extends Info {
                 throw new Error("could not connect to " + url, e);
             }
         }
-        info((currentTimeMillis() - t0) + " ms to connect to " + id);
+        info(String.format("%6d ms to connect to %s" , currentTimeMillis() - t0, id));
         log("<<< connect to " + id);
     }
 
@@ -79,7 +79,7 @@ public class ServerInfo extends Info {
             List<ProjectBean>                    projectBeans      = waitFor(allProjectsFuture);
             log("       ... found " + projectBeans.size() + " projects in " + id + ": " + projectBeans.stream().map(ProjectBean::getKey).toList());
             yielder.yieldz(projectBeans);
-            info((currentTimeMillis() - t0) + " ms to download projects for " + id);
+            info(String.format("%6d ms to download projects for %s", currentTimeMillis() - t0, id));
             log("<<<<<< projects of " + id);
         });
     }

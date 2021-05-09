@@ -106,7 +106,7 @@ public class ProjectInfo extends PartInfo {
                 jsb.setStartAt(jqlSearchResult.getStartAt() + issues.size());
             } while (jsb.getStartAt() < jqlSearchResult.getTotal());
 
-            info((currentTimeMillis() - t0) + " ms to download issues of " + fullName(null));
+            info(String.format("%6d ms to download issues of %s", currentTimeMillis() - t0, fullName(null)));
             log("<<<<<<<<< issues    -  " + fullName(null));
         });
     }
@@ -145,7 +145,7 @@ public class ProjectInfo extends PartInfo {
             }
             yielder.yieldz(worklogs);
             log("             ... found " + worklogs.size() + " worklogs in " + fullName(issue));
-            info((currentTimeMillis() - t0) + " ms to download worklogs of " + fullName(issue));
+            info(String.format("%6d ms to download worklogs of %s", currentTimeMillis() - t0, fullName(issue)));
             log("<<<<<<<<<<<< entries   -  " + fullName(issue));
         });
     }
