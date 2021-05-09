@@ -75,6 +75,8 @@ public class ProjectInfo extends PartInfo {
 
     public void downloadAllWorkItems() {
         if (serverInfo != null) {
+            log(">>>>>>>>>>>> issues and worklogs   -  " + fullName());
+            long t0 = currentTimeMillis();
             parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> {
                 PersonInfo person = sheetMaker.findPersonOrCreate(wb.getAuthor());
                 if (!person.ignore) {
@@ -87,12 +89,14 @@ public class ProjectInfo extends PartInfo {
                     accountYearMonthInfo.add(person, year, month, new DetailInfo(sec, 0));
                 }
             }));
+            info(String.format("%6d ms to download entries and worklogs of %s", currentTimeMillis() - t0, fullName()));
+            log("<<<<<<<<<<<< entries and worklogs   -  " + fullName());
         }
     }
 
     private Stream<IssueBean> getIssuesStream() {
         return Yielder.stream(POOL, yielder -> {
-            log(">>>>>>>>> issues    -  " + fullName(null));
+            log(">>>>>>>>> issues    -  " + fullName());
             long t0 = currentTimeMillis();
 
             SearchClient    searchClient = serverInfo.getJiraRestClient().getSearchClient();
@@ -102,12 +106,12 @@ public class ProjectInfo extends PartInfo {
                 jqlSearchResult = waitFor(searchClient.searchIssues(jsb));
                 List<IssueBean> issues = jqlSearchResult.getIssues();
                 yielder.yieldz(issues);
-                log("         ... found " + issues.size() + " issues for " + fullName(null));
+                log("         ... found " + issues.size() + " issues for " + fullName());
                 jsb.setStartAt(jqlSearchResult.getStartAt() + issues.size());
             } while (jsb.getStartAt() < jqlSearchResult.getTotal());
 
-            info(String.format("%6d ms to download issues of %s", currentTimeMillis() - t0, fullName(null)));
-            log("<<<<<<<<< issues    -  " + fullName(null));
+            info(String.format("%6d ms to download issues of %s", currentTimeMillis() - t0, fullName()));
+            log("<<<<<<<<< issues    -  " + fullName());
         });
     }
 
@@ -126,9 +130,6 @@ public class ProjectInfo extends PartInfo {
 
     private Stream<WorkEntryBean> getWorkEntries(IssueBean issue) {
         return Yielder.stream(POOL, yielder -> {
-            log(">>>>>>>>>>>> entries   -  " + fullName(issue));
-            long t0 = currentTimeMillis();
-
             String                         id            = issue.getId();
             CompletableFuture<WorklogBean> worklogFuture = serverInfo.getJiraRestClient().getIssueClient().getWorklogByIssue(id);
             WorklogBean                    worklogBean   = waitFor(worklogFuture);
@@ -139,18 +140,11 @@ public class ProjectInfo extends PartInfo {
             if (Config.CURRENT_YEAR_ONLY) {
                 worklogs.removeIf(web -> web.getStartedDate().getYear() < LocalDate.now().getYear());
             }
-            if (issue.getKey().equals("BD-52")) {
-                System.err.println("BD-52 issues: " + worklogs.size());
-                worklogs.forEach(w -> System.err.println("   - " + w.getStartedDate() + " " + w.getCreated() + " " + w.getTimeSpent() + " " + w.getTimeSpentSeconds() + " " + w.getAuthor().getDisplayName()));
-            }
             yielder.yieldz(worklogs);
-            log("             ... found " + worklogs.size() + " worklogs in " + fullName(issue));
-            info(String.format("%6d ms to download worklogs of %s", currentTimeMillis() - t0, fullName(issue)));
-            log("<<<<<<<<<<<< entries   -  " + fullName(issue));
         });
     }
 
-    private String fullName(IssueBean issue) {
-        return serverInfo.id + "." + projectBean.getKey() + (issue == null ? "" : "." + issue.getKey());
+    private String fullName() {
+        return serverInfo.id + "." + projectBean.getKey() ;
     }
 }
