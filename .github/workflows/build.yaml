@@ -57,6 +57,9 @@ jobs:
           git add raws/*
           git add docs/*
           if ! git diff --cached --exit-code >/dev/null; then
+            echo "will commit $(git status --porcelain | wc -l) files..."
             git commit -m "new timesheets @$(date)"
             git push
+          else
+            echo "nothing changed, nothing to commit!"
           fi
