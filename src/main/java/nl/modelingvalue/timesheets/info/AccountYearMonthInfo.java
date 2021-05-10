@@ -4,6 +4,7 @@ import static java.util.Collections.emptyMap;
 import static nl.modelingvalue.timesheets.info.DetailInfo.EMPTY_DETAIL;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,8 @@ public class AccountYearMonthInfo extends Info {
         return map.values().stream().flatMap(m -> m.keySet().stream()).distinct();
     }
 
-    public List<PersonInfo> getPersonInfos() {
-        return map.keySet().stream().toList();
+    public List<PersonInfo> getPersonInfos(int year) {
+        return map.keySet().stream().filter(pi -> !map.get(pi).getOrDefault(year, Collections.emptyMap()).isEmpty()).toList();
     }
 
     public long secFor(int year, ToLongFunction<DetailInfo> f) {

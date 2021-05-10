@@ -54,7 +54,7 @@ public class TableModel extends Model<PageModel> {
     public List<UserModel> getUsers() {
         return projectInfos
                 .stream()
-                .flatMap(pi -> pi.accountYearMonthInfo.getPersonInfos().stream())
+                .flatMap(pi -> pi.accountYearMonthInfo.getPersonInfos(parentModel.year).stream())
                 .distinct()
                 .sorted(Comparator.comparing(u -> u.id))
                 .map(pi -> new UserModel(this, pi))
