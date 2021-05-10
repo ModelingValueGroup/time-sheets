@@ -1,5 +1,4 @@
 <#-- @ftlvariable name="" type="nl.modelingvalue.timesheets.model.IndexModel" -->
-<#import "subs.ftl" as subs>
 <!DOCTYPE html>
 <html>
 <head>

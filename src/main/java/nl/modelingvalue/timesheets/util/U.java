@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("SameParameterValue")
@@ -98,5 +100,13 @@ public class U {
         } catch (IOException e) {
             throw new Error(e);
         }
+    }
+
+    public static String jsClasses(long sec, String... otherclasses) {
+        Stream<String> stream = Arrays.stream(otherclasses);
+        if (sec < 0) {
+            stream = Stream.concat(stream, Stream.of("negative"));
+        }
+        return stream.collect(Collectors.joining(" "));
     }
 }

@@ -30,11 +30,11 @@ public class UserModel extends Model<TableModel> {
     }
 
     public String getBudget() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
+        return parentModel.hasBudget() ? U.hoursFromSecFormatted(getSec(DetailInfo::secBudget)) : "";
     }
 
     public String getBudgetLeft() {
-        return U.hoursFromSecFormatted(getBudgetLeftSec());
+        return parentModel.hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
     }
 
     public String getBudgetLeftClass() {

@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="" type="nl.modelingvalue.timesheets.model.PageModel" -->
-<#import "subs.ftl" as subs>
+<#import "table.ftl" as imported>
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,10 +13,10 @@
 </head>
 <body onload="setupBudgets()">
 
-<@subs.table model=totalTable/>
+<@imported.table model=totalTable/>
 <br>
 <#list subTables as sub>
-    <@subs.table model=sub/>
+    <@imported.table model=sub/>
     <br>
 </#list>
 

@@ -2,7 +2,6 @@ package nl.modelingvalue.timesheets.model;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToLongFunction;
@@ -18,11 +17,13 @@ import nl.modelingvalue.timesheets.util.U;
 public class TableModel extends Model<PageModel> {
     public final String            name;
     public final List<ProjectInfo> projectInfos;
+    public final List<MonthColumn> months;
 
     public TableModel(PageModel pageModel, String name, List<ProjectInfo> projectInfos) {
         super(pageModel);
         this.name         = name;
         this.projectInfos = projectInfos;
+        this.months       = IntStream.rangeClosed(1, 12).mapToObj(MonthColumn::new).toList();
     }
 
     public String getName() {
@@ -31,6 +32,10 @@ public class TableModel extends Model<PageModel> {
 
     public String getYear() {
         return String.format("%4d", parentModel.year);
+    }
+
+    public List<MonthColumn> getMonths() {
+        return months;
     }
 
     public String getWriteTimeUrl() {
@@ -44,10 +49,6 @@ public class TableModel extends Model<PageModel> {
             String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
             return url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
         }
-    }
-
-    public List<MonthColumn> getMonths() {
-        return IntStream.rangeClosed(1, 12).mapToObj(MonthColumn::new).toList();
     }
 
     public List<UserModel> getUsers() {
@@ -84,24 +85,32 @@ public class TableModel extends Model<PageModel> {
         return getSecBudget() - getSecWorked();
     }
 
+    private long getBudgetLeftCumulatedSec() {
+        return getSecBudget() - getSecWorked();
+    }
+
     public String getWorked() {
         return U.hoursFromSecFormatted(getSecWorked());
     }
 
     public String getBudget() {
-        return U.hoursFromSecFormatted(getSecBudget());
+        return hasBudget()? U.hoursFromSecFormatted(getSecBudget()):"";
     }
 
     public String getBudgetLeft() {
-        return U.hoursFromSecFormatted(getBudgetLeftSec());
+        return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
+    }
+
+    public String getBudgetLeftCumulated() {
+        return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftCumulatedSec()) : "";
     }
 
     public String getBudgetLeftClass() {
-        List<String> classes = new ArrayList<>(List.of("budgetLeft"));
-        if (getBudgetLeftSec() < 0) {
-            classes.add("negative");
-        }
-        return String.join(" ", classes);
+        return U.jsClasses(getBudgetLeftSec(), "budgetLeft");
+    }
+
+    public String getBudgetLeftCumulatedClass() {
+        return U.jsClasses(getBudgetLeftCumulatedSec(), "budgetLeft");
     }
 
     public String getUrl() {
@@ -137,8 +146,10 @@ public class TableModel extends Model<PageModel> {
             return getSecBudget() - getSecWorked();
         }
 
-        public long getBudgetLeftNowSec() {
-            return getSecBudget() - getSecWorked();
+        public long getBudgetLeftCumulatedSec() {
+            long workedCumulated = getMonths().subList(0, month).stream().mapToLong(MonthColumn::getSecWorked).sum();
+            long budgetCumulated = getMonths().subList(0, month).stream().mapToLong(MonthColumn::getSecBudget).sum();
+            return budgetCumulated - workedCumulated;
         }
 
         public String getWorked() {
@@ -146,31 +157,23 @@ public class TableModel extends Model<PageModel> {
         }
 
         public String getBudget() {
-            return U.hoursFromSecFormatted(getSecBudget());
+            return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()):"";
         }
 
         public String getBudgetLeft() {
-            return U.hoursFromSecFormatted(getBudgetLeftSec());
+            return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
         }
 
-        public String getBudgetLeftNow() {
-            return U.hoursFromSecFormatted(getBudgetLeftNowSec());
+        public String getBudgetLeftCumulated() {
+            return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftCumulatedSec()) : "";
         }
 
         public String getBudgetLeftClass() {
-            List<String> classes = new ArrayList<>(List.of("budgetLeft"));
-            if (getBudgetLeftSec() < 0) {
-                classes.add("negative");
-            }
-            return String.join(" ", classes);
+            return U.jsClasses(getBudgetLeftSec(), "budgetLeft");
         }
 
-        public String getBudgetLeftNowClass() {
-            List<String> classes = new ArrayList<>(List.of("budgetLeft"));
-            if (getBudgetLeftNowSec() < 0) {
-                classes.add("negative");
-            }
-            return String.join(" ", classes);
+        public String getBudgetLeftCumulatedClass() {
+            return U.jsClasses(getBudgetLeftCumulatedSec(), "budgetLeft");
         }
     }
 }
