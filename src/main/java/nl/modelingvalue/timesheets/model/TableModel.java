@@ -85,32 +85,20 @@ public class TableModel extends Model<PageModel> {
         return getSecBudget() - getSecWorked();
     }
 
-    private long getBudgetLeftCumulatedSec() {
-        return getSecBudget() - getSecWorked();
-    }
-
     public String getWorked() {
         return U.hoursFromSecFormatted(getSecWorked());
     }
 
     public String getBudget() {
-        return hasBudget()? U.hoursFromSecFormatted(getSecBudget()):"";
+        return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()) : "";
     }
 
     public String getBudgetLeft() {
         return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
     }
 
-    public String getBudgetLeftCumulated() {
-        return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftCumulatedSec()) : "";
-    }
-
     public String getBudgetLeftClass() {
-        return U.jsClasses(getBudgetLeftSec(), "budgetLeft");
-    }
-
-    public String getBudgetLeftCumulatedClass() {
-        return U.jsClasses(getBudgetLeftCumulatedSec(), "budgetLeft");
+        return U.jsClasses(getBudgetLeftSec(), "budgetLeft", "budget");
     }
 
     public String getUrl() {
@@ -157,7 +145,7 @@ public class TableModel extends Model<PageModel> {
         }
 
         public String getBudget() {
-            return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()):"";
+            return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()) : "";
         }
 
         public String getBudgetLeft() {
@@ -169,11 +157,11 @@ public class TableModel extends Model<PageModel> {
         }
 
         public String getBudgetLeftClass() {
-            return U.jsClasses(getBudgetLeftSec(), "budgetLeft");
+            return U.jsClasses(getBudgetLeftSec(), "budgetLeft", "budget");
         }
 
         public String getBudgetLeftCumulatedClass() {
-            return U.jsClasses(getBudgetLeftCumulatedSec(), "budgetLeft");
+            return U.jsClasses(getBudgetLeftCumulatedSec(), "budgetLeft", "budget");
         }
     }
 }

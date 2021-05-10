@@ -127,6 +127,9 @@ td {
 .debug {
 	color : deepskyblue;
 }
+.budget {
+	background-color: palegreen;
+}
 ul {
 	font             : 1.1rem Inconsolata, monospace;
 	list-style-type  : none;

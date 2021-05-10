@@ -38,7 +38,7 @@ public class UserModel extends Model<TableModel> {
     }
 
     public String getBudgetLeftClass() {
-        return getBudgetLeftSec() < 0 ? "negative" : "";
+        return U.jsClasses(getBudgetLeftSec(), "budgetLeft", "budget");
     }
 
     public long getSec(ToLongFunction<DetailInfo> f) {
