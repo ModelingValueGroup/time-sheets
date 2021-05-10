@@ -78,10 +78,10 @@
             <tr>
                 <td class="budget" colspan=2>budget left</td>
                 <#list model.months as m>
-                    <td class="budget" class="${m.budgetLeftClass}">${m.budgetLeft}</td>
+                    <td class="${m.budgetLeftClass}">${m.budgetLeft}</td>
                 </#list>
                 <td class="budget" colspan=3></td>
-                <td class="budget" class="${model.budgetLeftClass}">${model.budgetLeft}</td>
+                <td class="${model.budgetLeftClass}">${model.budgetLeft}</td>
             </tr>
             <tr>
                 <td class="budget" colspan=2>cummulative budget left</td>
