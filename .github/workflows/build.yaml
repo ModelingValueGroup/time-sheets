@@ -49,7 +49,7 @@ jobs:
           ###############################
           rm -rf time-sheets time-sheets-secrets.json
 
-      - name: "gi-push"
+      - name: "git-push"
         run: |
           cd time-sheets-mvg
           git config --global user.email "automation@modelingvalue.nl"
