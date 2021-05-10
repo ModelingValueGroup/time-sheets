@@ -1,6 +1,7 @@
 package nl.modelingvalue.timesheets.info;
 
 import static java.lang.System.currentTimeMillis;
+import static nl.modelingvalue.timesheets.util.LogAccu.info;
 import static nl.modelingvalue.timesheets.util.LogAccu.trace;
 import static nl.modelingvalue.timesheets.util.LogAccu.debug;
 import static nl.modelingvalue.timesheets.util.Pool.POOL;
@@ -77,6 +78,9 @@ public class ServerInfo extends Info {
 
             CompletableFuture<List<ProjectBean>> allProjectsFuture = getJiraRestClient().getProjectClient().getAllProjects();
             List<ProjectBean>                    projectBeans      = waitFor(allProjectsFuture);
+            projectBeans.forEach(pb->{
+                info(String.format("* project in %-12s: %-6s  %-6s %s",id,pb.getKey(), pb.getId(),pb.getName()));
+            });
             debug("       ... found " + projectBeans.size() + " projects in " + id + ": " + projectBeans.stream().map(ProjectBean::getKey).toList());
             yielder.yieldz(projectBeans);
             trace(String.format("%6d ms to download projects for %s", currentTimeMillis() - t0, id));

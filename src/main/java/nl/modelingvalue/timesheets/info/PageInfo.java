@@ -43,7 +43,7 @@ public class PageInfo extends PartInfo {
             accumulated = true;
             partInfos.forEach(pi -> {
                 pi.accumulateSubs();
-                accountYearMonthInfo.add(pi.accountYearMonthInfo);
+                yearPersonMonthInfo.add(pi.yearPersonMonthInfo);
             });
         }
     }

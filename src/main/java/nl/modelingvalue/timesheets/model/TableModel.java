@@ -54,7 +54,7 @@ public class TableModel extends Model<PageModel> {
     public List<UserModel> getUsers() {
         return projectInfos
                 .stream()
-                .flatMap(pi -> pi.accountYearMonthInfo.getPersonInfos(parentModel.year).stream())
+                .flatMap(pi -> pi.yearPersonMonthInfo.getPersonInfos(parentModel.year).stream())
                 .distinct()
                 .sorted()
                 .map(pi -> new UserModel(this, pi))
@@ -66,11 +66,11 @@ public class TableModel extends Model<PageModel> {
     }
 
     public boolean hasBudget() {
-        return 0 < getSecBudget();
+        return projectInfos.stream().allMatch(pi -> pi.yearPersonMonthInfo.hasBudget(parentModel.year));
     }
 
     private long getSec(ToLongFunction<DetailInfo> f) {
-        return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, f)).sum();
+        return projectInfos.stream().mapToLong(pi -> pi.yearPersonMonthInfo.secFor(parentModel.year, f)).sum();
     }
 
     private long getSecWorked() {
@@ -119,7 +119,7 @@ public class TableModel extends Model<PageModel> {
         }
 
         private long getSec(ToLongFunction<DetailInfo> f) {
-            return projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(parentModel.year, month, f)).sum();
+            return projectInfos.stream().mapToLong(pi -> pi.yearPersonMonthInfo.secFor(parentModel.year, month, f)).sum();
         }
 
         private long getSecWorked() {

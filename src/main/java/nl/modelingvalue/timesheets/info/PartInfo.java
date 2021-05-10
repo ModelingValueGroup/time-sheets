@@ -14,7 +14,7 @@ public class PartInfo extends Info {
     public List<String>                parts   = new ArrayList<>();
     public Map<String, YearBudgetInfo> budgets = new HashMap<>();
     //
-    public AccountYearMonthInfo        accountYearMonthInfo;
+    public YearPersonMonthInfo         yearPersonMonthInfo;
 
     public PartInfo() {
     }
@@ -22,8 +22,8 @@ public class PartInfo extends Info {
     public PartInfo(PartInfo fromJson) {
         super(fromJson);
         parts                = fromJson.parts;
-        budgets              = fromJson.budgets;
-        accountYearMonthInfo = new AccountYearMonthInfo();
+        budgets             = fromJson.budgets;
+        yearPersonMonthInfo = new YearPersonMonthInfo();
     }
 
     public PartInfo makeActualPart() {
@@ -33,12 +33,12 @@ public class PartInfo extends Info {
     public void init(SheetMaker sheetMaker) {
         super.init(sheetMaker);
         budgets.values().forEach(v -> v.init(sheetMaker));
-        accountYearMonthInfo.init(sheetMaker);
-        accountYearMonthInfo.add(budgets.values());
+        yearPersonMonthInfo.init(sheetMaker);
+        yearPersonMonthInfo.add(budgets.values());
     }
 
     public Stream<Integer> getYears() {
-        return accountYearMonthInfo.getYears();
+        return yearPersonMonthInfo.getYears();
     }
 
     public Stream<ProjectInfo> allProjectInfosDeep() {
@@ -57,6 +57,6 @@ public class PartInfo extends Info {
     }
 
     public boolean notEmpty(int year) {
-        return accountYearMonthInfo.notEmpty(year);
+        return yearPersonMonthInfo.notEmpty(year);
     }
 }

@@ -31,14 +31,17 @@
                 <td class="light personName">${u.name}</td>
                 <#list u.months as m>
                     <td class="white">
-                    <span class="spend">
-                        <a class="tooltipped" target="_blank"
-                           href="${m.url}">
-                            ${m.worked}
-                            <#if m.hasBudget()>
-                                <span class="tooltiptext">${model.nbsp("budget: ${m.budget}")}</span>
-                            </#if>
-                        </a>
+                        <span class="spend">
+                        <#if m.url!="">
+                            <a class="tooltipped" target="_blank" href="${m.url}">
+                        </#if>
+                                ${m.worked}
+                                <#if m.hasBudget()>
+                                    <span class="tooltiptext">${model.nbsp("budget: ${m.budget}")}</span>
+                                </#if>
+                                <#if m.url!="">
+                            </a>
+                        </#if>
                     </span>
                         <span class="budget">${m.budget}</span>
                     </td>

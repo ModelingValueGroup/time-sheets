@@ -44,7 +44,7 @@ public class UserModel extends Model<TableModel> {
     public long getSec(ToLongFunction<DetailInfo> f) {
         return parentModel.projectInfos
                 .stream()
-                .mapToLong(pi -> pi.accountYearMonthInfo.secFor(personInfo, parentModel.parentModel.year, f))
+                .mapToLong(pi -> pi.yearPersonMonthInfo.secFor(personInfo, parentModel.parentModel.year, f))
                 .sum();
     }
 

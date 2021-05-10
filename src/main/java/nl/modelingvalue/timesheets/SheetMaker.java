@@ -190,6 +190,8 @@ public class SheetMaker {
     }
 
     public void generateAll() {
+        parts.values().forEach(pi -> pi.yearPersonMonthInfo.budgetStatusLog(pi.id));//TODO remove later
+
         generateSupportFiles();
         publish.partInfos.forEach(pi -> pi.getYears()
                 .filter(y -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
