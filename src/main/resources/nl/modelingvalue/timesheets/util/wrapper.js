@@ -59,6 +59,7 @@ function tryDecryptAndReplace(pw) {
     var doc = document.open("text/html");
     doc.write(innerHTML);
     doc.close();
+    dispatchEvent(new Event('load'));
 }
 
 function tryCookie() {
