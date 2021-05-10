@@ -23,6 +23,10 @@ public class MonthModel extends Model<UserModel> {
         this.month  = month;
     }
 
+    public boolean hasBudget() {
+        return getSec(DetailInfo::secBudget) != 0;
+    }
+
     private long getSec(ToLongFunction<DetailInfo> f) {
         return parentModel.parentModel.projectInfos.stream().mapToLong(pi -> pi.accountYearMonthInfo.secFor(person, year, month, f)).sum();
     }

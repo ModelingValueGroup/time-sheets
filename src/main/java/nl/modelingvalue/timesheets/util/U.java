@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @SuppressWarnings("SameParameterValue")
 public class U {
-
     public static Pattern cachePattern(String s) {
         String regexp = "/.*/";
         if (s != null) {
@@ -32,11 +32,11 @@ public class U {
         try {
             InputStream stream = PageEncryptWrapper.class.getResourceAsStream(name);
             if (stream == null) {
-                throw new Error("wrapper source not found");
+                throw new Error("resource '" + name + "' not found");
             }
             return readInputStreamAsString(stream);
         } catch (IOException e) {
-            throw new Error("could not read wrapper source from resource", e);
+            throw new Error("could not read resource '" + name + "'", e);
         }
     }
 
@@ -86,5 +86,17 @@ public class U {
 
     public static String hoursFromSecFormatted(long sec) {
         return sec == 0 ? "&nbsp;&nbsp;" : String.format("%4.2f", hoursFromSec(sec));
+    }
+
+    public static void copyResource(Path file) {
+        copyResource(file, file.getFileName().toString(), s -> s);
+    }
+
+    public static void copyResource(Path file, String rsrcName, Function<String, String> filter) {
+        try {
+            Files.writeString(file, filter.apply(readResource(rsrcName)));
+        } catch (IOException e) {
+            throw new Error(e);
+        }
     }
 }

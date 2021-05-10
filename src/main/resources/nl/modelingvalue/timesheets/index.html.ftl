@@ -4,7 +4,8 @@
 <html>
 <head>
     <title>MVG timesheets</title>
-    <@subs.css/>
+    <link href="styles.css" rel="stylesheet">
+    <script src="scripts.js"></script>
 </head>
 <body>
 
@@ -16,6 +17,10 @@
         </#list>
     </ul>
 </#list>
+<button class="iconButton tooltipped" onclick='document.cookie = "pw=;expires=Thu, 01 Jan 1970 00:00:01 GMT";location.reload();'>
+    <i class="fa fa-lock"></i>
+    <span class="tooltiptext">remove password</span>
+</button>
 
 <div class="separator"></div>
 

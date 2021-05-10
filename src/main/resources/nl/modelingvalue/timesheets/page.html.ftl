@@ -1,11 +1,13 @@
+<#-- @ftlvariable name="" type="nl.modelingvalue.timesheets.model.PageModel" -->
 <#import "subs.ftl" as subs>
 <!DOCTYPE html>
 <html>
 <head>
     <title>${name} - ${year}</title>
-    <@subs.css/>
+    <link href="styles.css" rel="stylesheet">
+    <script src="scripts.js"></script>
 </head>
-<body>
+<body onload="setupBudgets()">
 
 <@subs.table model=totalTable/>
 <br>
@@ -19,25 +21,7 @@
 <label for="budget"><input type="radio" name="budget" id="budget"/>Budget Hours</label>
 <br>
 <br>
-Changes in JIRA will not be reflected immediately.
-<br>
-This page is automatically recalculated every hour (<a class='tooltipped'
-                                                       href='${recalcUrl}'>recalc
-    now<span>${nbsp("force a recalculation now")}</span></a>)
-<#if otherProjects?size != 0>
-    <br>
-    <br>
-    Other pages:
-    <#list otherProjects as p>
-        <a class='tooltipped' href='${p.url}'>
-            ${p.name} (${p.year})
-            <span>${nbsp("Go to the ${p.name} page.")}</span>
-        </a>
-    </#list>
-</#if>
-
-
-<@subs.js/>
+Changes in JIRA will not be reflected immediately, but this page is automatically recalculated regularly
 
 </body>
 </html>

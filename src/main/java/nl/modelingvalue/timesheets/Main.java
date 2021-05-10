@@ -3,8 +3,6 @@ package nl.modelingvalue.timesheets;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
 import static nl.modelingvalue.timesheets.util.LogAccu.info;
 
-import nl.modelingvalue.timesheets.model.IndexModel;
-
 public class Main {
     public static void main(String[] args) {
         info("running with: ");
@@ -23,6 +21,6 @@ public class Main {
         } catch (Throwable t) {
             err(t);
         }
-        sheetMaker.generate(new IndexModel());
+        sheetMaker.generateIndex();
     }
 }

@@ -12,6 +12,8 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
       <entry name="?*.ftl" />
+      <entry name="?*.css" />
+      <entry name="?*.js" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="16" />
   </component>

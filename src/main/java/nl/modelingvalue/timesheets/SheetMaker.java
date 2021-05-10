@@ -1,6 +1,15 @@
 package nl.modelingvalue.timesheets;
 
+import static nl.modelingvalue.timesheets.Config.CURRENT_YEAR_ONLY;
+import static nl.modelingvalue.timesheets.Config.DEFAULT_DIRS;
+import static nl.modelingvalue.timesheets.Config.DEFAULT_NAME_PAT;
 import static nl.modelingvalue.timesheets.Config.INDEX_FILENAME;
+import static nl.modelingvalue.timesheets.Config.INDEX_HTML_TEMPLATE;
+import static nl.modelingvalue.timesheets.Config.PAGE_HTML_TEMPLATE;
+import static nl.modelingvalue.timesheets.Config.PUBLIC_DIRNAME;
+import static nl.modelingvalue.timesheets.Config.RAW_DIRNAME;
+import static nl.modelingvalue.timesheets.Config.SUPPORT_FILES;
+import static nl.modelingvalue.timesheets.Config.TIME_SHEET_FILENAME_TEMPLATE;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
 import static nl.modelingvalue.timesheets.util.LogAccu.trace;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
@@ -35,9 +44,11 @@ import nl.modelingvalue.timesheets.info.PublishInfo;
 import nl.modelingvalue.timesheets.info.ServerInfo;
 import nl.modelingvalue.timesheets.info.TeamInfo;
 import nl.modelingvalue.timesheets.model.IndexModel;
+import nl.modelingvalue.timesheets.model.Model;
 import nl.modelingvalue.timesheets.model.PageModel;
-import nl.modelingvalue.timesheets.util.FreeMarker;
+import nl.modelingvalue.timesheets.util.FreeMarkerEngine;
 import nl.modelingvalue.timesheets.util.GsonUtils;
+import nl.modelingvalue.timesheets.util.PageEncryptWrapper;
 import nl.modelingvalue.timesheets.util.Pool;
 import nl.modelingvalue.timesheets.util.U;
 
@@ -62,8 +73,8 @@ public class SheetMaker {
     }
 
     public static SheetMaker read(String[] args) {
-        Stream<String> pathNameStream = args.length == 0 ? Config.DEFAULT_DIRS.stream() : Arrays.stream(args);
-        List<Path>     paths          = pathNameStream.map(Paths::get).flatMap(fd -> U.selectJsonFiles(fd, Config.DEFAULT_NAME_PAT)).toList();
+        Stream<String> pathNameStream = args.length == 0 ? DEFAULT_DIRS.stream() : Arrays.stream(args);
+        List<Path>     paths          = pathNameStream.map(Paths::get).flatMap(fd -> U.selectJsonFiles(fd, DEFAULT_NAME_PAT)).toList();
         if (paths.isEmpty()) {
             throw new Error("no sheetMaker files found, nothing to work on");
         }
@@ -166,20 +177,49 @@ public class SheetMaker {
         };
     }
 
+    public void generateIndex() {
+        trace("generating " + INDEX_FILENAME);
+        generateSupportFiles();
+        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel());
+    }
+
+    private void generateSupportFiles() {
+        Stream.of(RAW_DIRNAME, PUBLIC_DIRNAME)
+                .flatMap(d -> SUPPORT_FILES.stream().map(fn -> Paths.get(d, fn)))
+                .forEach(U::copyResource);
+    }
+
     public void generateAll() {
+        generateSupportFiles();
         publish.partInfos.forEach(pi -> pi.getYears()
-                .filter(y -> !Config.CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
+                .filter(y -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
                 .forEach(year -> generate(pi, year)));
     }
 
     private void generate(PartInfo pi, Integer year) {
-        String outFile = String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
+        String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
         trace("generating " + outFile);
-        FreeMarker.generate("page.html", outFile, new PageModel(pi, year), publish.password);
+        generate(PAGE_HTML_TEMPLATE, outFile, new PageModel(pi, year));
     }
 
-    public void generate(IndexModel model) {
-        trace("generating " + INDEX_FILENAME);
-        FreeMarker.generate("index.html", INDEX_FILENAME, model, publish.password);
+    public void generate(String templateName, String outFileName, Model<?> projectModel) {
+        write(outFileName, new FreeMarkerEngine().process("nl/modelingvalue/timesheets/" + templateName + ".ftl", projectModel));
+    }
+
+    private void write(String outputFile, String page) {
+        Path rawFile = Paths.get(RAW_DIRNAME, outputFile);
+        try {
+            Files.createDirectories(rawFile.getParent());
+            Files.writeString(rawFile, page);
+        } catch (IOException e) {
+            throw new Error("can not write output file " + rawFile.toAbsolutePath(), e);
+        }
+
+        Path pubFile = Paths.get(PUBLIC_DIRNAME, outputFile);
+        try {
+            new PageEncryptWrapper(publish.password).write(page, pubFile);
+        } catch (IOException e) {
+            throw new Error("can not write output file " + pubFile.toAbsolutePath(), e);
+        }
     }
 }

@@ -1,0 +1,100 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:100,300,400,700);
+@import url(//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css);
+body, html {
+	height : 100%;
+}
+body {
+	font-family : "Open Sans", sans-serif;
+	font-weight : 100;
+	display     : flex;
+	overflow    : hidden;
+}
+input ::-webkit-input-placeholder {
+	color : rgba(255, 255, 255, 0.7);
+}
+input ::-moz-placeholder {
+	color : rgba(255, 255, 255, 0.7);
+}
+input :-ms-input-placeholder {
+	color : rgba(255, 255, 255, 0.7);
+}
+input:focus {
+	outline : 0 transparent solid;
+}
+input:focus ::-webkit-input-placeholder {
+	color : rgba(0, 0, 0, 0.7);
+}
+input:focus ::-moz-placeholder {
+	color : rgba(0, 0, 0, 0.7);
+}
+input:focus :-ms-input-placeholder {
+	color : rgba(0, 0, 0, 0.7);
+}
+.login-form {
+	min-height : 10rem;
+	margin     : auto;
+	max-width  : 50%;
+	padding    : 0.5rem;
+}
+.login-text {
+	color      : white;
+	font-size  : 1.5rem;
+	margin     : 0 auto;
+	max-width  : 50%;
+	padding    : 0.5rem;
+	text-align : center;
+}
+.login-text .fa-stack-1x {
+	color : black;
+}
+.login-password {
+	background    : transparent;
+	border        : 0 solid;
+	border-bottom : 1px solid rgba(255, 255, 255, 0.5);
+	color         : white;
+	display       : block;
+	margin        : 1rem;
+	padding       : 0.5rem;
+	transition    : 250ms background ease-in;
+	width         : calc(100% - 3rem);
+}
+.login-password:focus {
+	background : white;
+	color      : black;
+	transition : 250ms background ease-in;
+}
+[class*=underlay] {
+	left       : 0;
+	min-height : 100%;
+	min-width  : 100%;
+	position   : fixed;
+	top        : 0;
+}
+.underlay-photo {
+	-webkit-animation : hue-rotate 6s infinite;
+	animation         : hue-rotate 6s infinite;
+	background        : url("https://images.photowall.com/products/55402.jpg");
+	background-size   : cover;
+	-webkit-filter    : grayscale(30%);
+	z-index           : -1;
+}
+.underlay-black {
+	background : rgba(0, 0, 0, 0.7);
+	z-index    : -1;
+}
+@-webkit-keyframes hue-rotate {
+	from {
+		-webkit-filter : grayscale(30%) hue-rotate(0deg);
+	}
+	to {
+		-webkit-filter : grayscale(30%) hue-rotate(360deg);
+	}
+}
+@keyframes hue-rotate {
+	from {
+		-webkit-filter : grayscale(30%) hue-rotate(0deg);
+	}
+	to {
+		-webkit-filter : grayscale(30%) hue-rotate(360deg);
+	}
+}

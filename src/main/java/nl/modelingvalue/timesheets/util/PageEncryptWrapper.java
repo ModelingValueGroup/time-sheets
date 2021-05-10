@@ -2,12 +2,16 @@ package nl.modelingvalue.timesheets.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Base64;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -18,21 +22,28 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class PageEncryptWrapper {
-    private static final String IV           = "5D9r9ZVzEYYgha93/aUK2w==";
-    private static final String WRAPPER_PAGE = U.readResource("wrapper.html");
-    private static final int    LINE_LENGTH  = 128;
+    private static final int          LINE_LENGTH           = 128;
+    private static final String       IV                    = "5D9r9ZVzEYYgha93/aUK2w==";
+    public static final  String       WRAPPER_HTML_RSRC     = "wrapper.html";
+    private static final List<String> WRAPPER_SUPPORT_RSRCS = List.of(
+            "wrapper.css",
+            "wrapper.js",
+            "wrapper.jpg"
+    );
     //
-    private final        String password;
+    private final        String       password;
 
 
     public PageEncryptWrapper(String password) {
         this.password = password;
     }
 
-    public String wrap(String htmlPage) {
-        return WRAPPER_PAGE
-                .replace("@@@iv@@@", IV)
-                .replace("@@@data@@@", split(encrypt(htmlPage, password, IV)));
+    public void write(String htmlPage, Path file) throws IOException {
+        Path dir = file.getParent();
+        Files.createDirectories(dir);
+        String data = split(encrypt(htmlPage, password, IV));
+        U.copyResource(file, WRAPPER_HTML_RSRC, s -> s.replace("@@@iv@@@", IV).replace("@@@data@@@", data));
+        WRAPPER_SUPPORT_RSRCS.forEach(fn -> U.copyResource(dir.resolve(fn)));
     }
 
     private String split(String oneLiner) {
