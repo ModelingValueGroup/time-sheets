@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.modelingvalue.timesheets.Config;
+import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.info.PartInfo;
 import nl.modelingvalue.timesheets.util.LogAccu;
 
 public class IndexModel extends Model<IndexModel> {
-    public IndexModel() {
+    private final SheetMaker sheetMaker;
+
+    public IndexModel(SheetMaker sheetMaker) {
         super(null);
+        this.sheetMaker = sheetMaker;
     }
 
     public List<IndexPageModel> getPages() {
@@ -27,8 +32,8 @@ public class IndexModel extends Model<IndexModel> {
                     .collect(Collectors.groupingBy(a1 -> a1[1]))
                     .entrySet()
                     .stream()
-                    .map(e -> new IndexPageModel(e.getKey(), e.getValue().stream().map(a -> a[0]).sorted(Comparator.reverseOrder()).toList()))
-                    .sorted(Comparator.comparing(m -> m.name))
+                    .map(e -> new IndexPageModel(sheetMaker.parts.get(e.getKey()), e.getKey(), e.getValue().stream().map(a -> a[0]).sorted(Comparator.reverseOrder()).toList()))
+                    .sorted()
                     .toList();
 
         } catch (IOException e) {
@@ -60,12 +65,14 @@ public class IndexModel extends Model<IndexModel> {
         return String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, Integer.parseInt(year), name);
     }
 
-    public static class IndexPageModel {
+    public static class IndexPageModel implements Comparable<IndexPageModel> {
         private final String       name;
+        private final int          index;
         private final List<String> years;
 
-        public IndexPageModel(String name, List<String> years) {
+        public IndexPageModel(PartInfo partInfo, String name, List<String> years) {
             this.name  = name;
+            this.index = partInfo == null ? Integer.MAX_VALUE : partInfo.index;
             this.years = years;
         }
 
@@ -75,6 +82,11 @@ public class IndexModel extends Model<IndexModel> {
 
         public List<String> getYears() {
             return years;
+        }
+
+        @Override
+        public int compareTo(IndexPageModel o) {
+            return index == o.index ? String.CASE_INSENSITIVE_ORDER.compare(name, o.name) : Integer.compare(index, o.index);
         }
     }
 }

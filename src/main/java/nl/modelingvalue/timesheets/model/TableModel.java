@@ -3,7 +3,6 @@ package nl.modelingvalue.timesheets.model;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToLongFunction;
@@ -56,7 +55,7 @@ public class TableModel extends Model<PageModel> {
                 .stream()
                 .flatMap(pi -> pi.accountYearMonthInfo.getPersonInfos(parentModel.year).stream())
                 .distinct()
-                .sorted(Comparator.comparing(u -> u.id))
+                .sorted()
                 .map(pi -> new UserModel(this, pi))
                 .toList();
     }

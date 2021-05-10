@@ -17,7 +17,7 @@ public class PersonInfo extends Info {
     }
 
     public PersonInfo(AccountBean ab, SheetMaker sheetMaker) {
-        // ab.getId() yields 'null' for AccountBeans
+        // NB: ab.getId() yields 'null' for AccountBeans
         id       = "UNKNOWN:" + ab.getName();
         index    = -1;
         fullName = "UNKNOWN:" + ab.getDisplayName();

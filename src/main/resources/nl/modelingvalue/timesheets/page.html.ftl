@@ -4,6 +4,10 @@
 <html>
 <head>
     <title>${name} - ${year}</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <meta http-equiv="refresh" content="30">
     <link href="styles.css" rel="stylesheet">
     <script src="scripts.js"></script>
 </head>
@@ -21,7 +25,7 @@
 <label for="budget"><input type="radio" name="budget" id="budget"/>Budget Hours</label>
 <br>
 <br>
-Changes in JIRA will not be reflected immediately, but this page is automatically recalculated regularly
+Changes in JIRA will not be reflected immediately, this page will refresh regularly.
 
 </body>
 </html>

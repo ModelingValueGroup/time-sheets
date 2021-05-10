@@ -41,38 +41,38 @@ function decryptToText(key, data, iv) {
         }));
 }
 
+function tryCookie() {
+    console.log("page (re)loaded...")
+    let cookie = getCookie()
+    if (cookie != null && cookie !== "") {
+        try {
+            console.log("trying password from cookie...")
+            tryDecryptAndReplace(cookie)
+        } catch (e) {
+            setCookie("");
+        }
+    }
+}
+
 function decryptClicked() {
     let passwordText = document.getElementById("password");
     setCookie(passwordText.value)
     try {
         tryDecryptAndReplace(passwordText.value)
     } catch (e) {
+        console.log("incorrect password")
     }
 }
 
 function tryDecryptAndReplace(pw) {
     let innerHTML = decryptToText(pw, MY_DATA, MY_IV);
     if (!innerHTML.includes("<html>")) {
+        console.log("incorrect password")
         throw null;
     }
-    //document.write(innerHTML);
+    console.log("correct password, moving to uncrypted page")
     var doc = document.open("text/html");
     doc.write(innerHTML);
     doc.close();
     dispatchEvent(new Event('load'));
-}
-
-function tryCookie() {
-    if (new URLSearchParams(window.location.search).get('r') != null) {
-        setCookie("");
-    } else {
-        let cookie = getCookie()
-        if (cookie != null && cookie !== "") {
-            try {
-                tryDecryptAndReplace(cookie)
-            } catch (e) {
-                setCookie("");
-            }
-        }
-    }
 }

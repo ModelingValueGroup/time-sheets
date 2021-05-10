@@ -53,7 +53,7 @@ import nl.modelingvalue.timesheets.util.Pool;
 import nl.modelingvalue.timesheets.util.U;
 
 public class SheetMaker {
-    public static final Type SETTINGS_TYPE = new TypeToken<SheetMaker>() {
+    public static final Type SHEETMAKER_TYPE = new TypeToken<SheetMaker>() {
     }.getType();
 
     public PublishInfo             publish;
@@ -140,7 +140,7 @@ public class SheetMaker {
     private static SheetMaker read(Path f) {
         trace("...reading " + f.toAbsolutePath());
         try {
-            return GsonUtils.withSpecials().fromJson(new JsonReader(Files.newBufferedReader(f)), SETTINGS_TYPE);
+            return GsonUtils.withSpecials().fromJson(new JsonReader(Files.newBufferedReader(f)), SHEETMAKER_TYPE);
         } catch (IOException e) {
             throw new Error("can not read " + f.toAbsolutePath(), e);
         }
@@ -180,7 +180,7 @@ public class SheetMaker {
     public void generateIndex() {
         trace("generating " + INDEX_FILENAME);
         generateSupportFiles();
-        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel());
+        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel(this));
     }
 
     private void generateSupportFiles() {
