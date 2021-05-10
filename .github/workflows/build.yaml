@@ -56,5 +56,7 @@ jobs:
           git config --global user.name "Automation through Actions"
           git add raws/*.html
           git add docs/*.html
-          git commit -m "new timesheets @$(date)"
-          git push
+          if git diff --cached --exit-code >/dev/null; then
+            git commit -m "new timesheets @$(date)"
+            git push
+          fi
