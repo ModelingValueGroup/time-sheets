@@ -178,13 +178,14 @@ public class SheetMaker {
     }
 
     public void generateIndex() {
-        trace("generating " + INDEX_FILENAME);
+        trace("> generating " + INDEX_FILENAME);
         generateSupportFiles();
         generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel(this));
     }
 
     private void generateSupportFiles() {
         Stream.of(RAW_DIRNAME, PUBLIC_DIRNAME)
+                .peek(d -> U.createDirectories(Paths.get(d)))
                 .flatMap(d -> SUPPORT_FILES.stream().map(fn -> Paths.get(d, fn)))
                 .forEach(U::copyResource);
     }
@@ -200,7 +201,7 @@ public class SheetMaker {
 
     private void generate(PartInfo pi, Integer year) {
         String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
-        trace("generating " + outFile);
+        trace("> generating " + outFile);
         generate(PAGE_HTML_TEMPLATE, outFile, new PageModel(pi, year));
     }
 

@@ -109,4 +109,12 @@ public class U {
         }
         return stream.collect(Collectors.joining(" "));
     }
+
+    public static void createDirectories(Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+    }
 }
