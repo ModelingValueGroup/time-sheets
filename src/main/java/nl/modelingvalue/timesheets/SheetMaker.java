@@ -56,11 +56,12 @@ public class SheetMaker {
     public static final Type SHEETMAKER_TYPE = new TypeToken<SheetMaker>() {
     }.getType();
 
-    public PublishInfo             publish;
-    public Map<String, ServerInfo> servers = new HashMap<>();
-    public Map<String, PersonInfo> persons = new HashMap<>();
-    public Map<String, TeamInfo>   teams   = new HashMap<>();
-    public Map<String, PartInfo>   parts   = new HashMap<>();
+    public  PublishInfo             publish;
+    public  Map<String, ServerInfo> servers = new HashMap<>();
+    public  Map<String, PersonInfo> persons = new HashMap<>();
+    public  Map<String, TeamInfo>   teams   = new HashMap<>();
+    public  Map<String, PartInfo>   parts   = new HashMap<>();
+    private long                    supportCrc;
 
     public void init() {
         // json can not read objects of different class, so we replace parts here with the actual part:
@@ -179,21 +180,20 @@ public class SheetMaker {
 
     public void generateIndex() {
         trace("> generating " + INDEX_FILENAME);
-        generateSupportFiles();
         generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel(this));
     }
 
-    private void generateSupportFiles() {
-        Stream.of(RAW_DIRNAME, PUBLIC_DIRNAME)
+    public void generateSupportFiles() {
+        supportCrc = Stream.of(RAW_DIRNAME, PUBLIC_DIRNAME)
                 .peek(d -> U.createDirectories(Paths.get(d)))
                 .flatMap(d -> SUPPORT_FILES.stream().map(fn -> Paths.get(d, fn)))
-                .forEach(U::copyResource);
+                .mapToLong(U::copyResourceCrc)
+                .reduce(0, (a, b) -> a ^ b);
     }
 
     public void generateAll() {
         parts.values().forEach(pi -> pi.yearPersonMonthInfo.budgetStatusLog(pi.id));//TODO remove later
 
-        generateSupportFiles();
         publish.partInfos.forEach(pi -> pi.getYears()
                 .filter(y -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
                 .forEach(year -> generate(pi, year)));
@@ -210,19 +210,21 @@ public class SheetMaker {
     }
 
     private void write(String outputFile, String page) {
-        Path rawFile = Paths.get(RAW_DIRNAME, outputFile);
+        Path rawFile    = Paths.get(RAW_DIRNAME, outputFile);
+        Path rawCrcFile = Paths.get(RAW_DIRNAME, outputFile + ".crc.json");
+        Path pubFile    = Paths.get(PUBLIC_DIRNAME, outputFile);
+        Path pubCrcFile = Paths.get(PUBLIC_DIRNAME, outputFile + ".crc.json");
         try {
             Files.createDirectories(rawFile.getParent());
-            Files.writeString(rawFile, page);
+            String crcJson = U.makeCrcJson(supportCrc ^ U.writeStringCrc(rawFile, page));
+            U.writeStringCrc(rawCrcFile, crcJson);
+            if (publish.password != null) {
+                new PageEncryptWrapper(publish.password).write(page, pubFile);
+                U.writeStringCrc(pubCrcFile, crcJson);
+            }
         } catch (IOException e) {
-            throw new Error("can not write output file " + rawFile.toAbsolutePath(), e);
-        }
-
-        Path pubFile = Paths.get(PUBLIC_DIRNAME, outputFile);
-        try {
-            new PageEncryptWrapper(publish.password).write(page, pubFile);
-        } catch (IOException e) {
-            throw new Error("can not write output file " + pubFile.toAbsolutePath(), e);
+            throw new Error("can not write output file", e);
         }
     }
+
 }

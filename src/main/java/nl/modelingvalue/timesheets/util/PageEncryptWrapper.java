@@ -38,12 +38,12 @@ public class PageEncryptWrapper {
         this.password = password;
     }
 
-    public void write(String htmlPage, Path file) throws IOException {
+    public long write(String htmlPage, Path file) throws IOException {
         Path dir = file.getParent();
         Files.createDirectories(dir);
         String data = split(encrypt(htmlPage, password, IV));
-        U.copyResource(file, WRAPPER_HTML_RSRC, s -> s.replace("@@@iv@@@", IV).replace("@@@data@@@", data));
-        WRAPPER_SUPPORT_RSRCS.forEach(fn -> U.copyResource(dir.resolve(fn)));
+        long   crc = U.copyResourceCrc(file, WRAPPER_HTML_RSRC, s -> s.replace("@@@iv@@@", IV).replace("@@@data@@@", data));
+        return WRAPPER_SUPPORT_RSRCS.stream().mapToLong(fn -> U.copyResourceCrc(dir.resolve(fn))).reduce(crc, (l1, l2) -> l1 ^ l2);
     }
 
     private String split(String oneLiner) {

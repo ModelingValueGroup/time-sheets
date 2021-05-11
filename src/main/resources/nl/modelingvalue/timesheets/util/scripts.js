@@ -18,3 +18,28 @@ function setupBudgets() {
     }
 }
 
+var crc = "";
+
+function refreshCheck() {
+    var noCacheHdr = new Headers();
+    noCacheHdr.append('pragma', 'no-cache');
+    noCacheHdr.append('cache-control', 'no-cache');
+
+    let crcFile = window.location.pathname.split("/").pop() + ".crc.json";
+    fetch(new Request(crcFile), {method: 'GET', headers: noCacheHdr,})
+        .then(response => response.json())
+        .then(data => {
+            var newCrc = data.crc
+            if (crc === "") {
+                crc = newCrc
+                console.log("page crc = " + crc)
+                setTimeout(refreshCheck, 30000);
+            } else if (newCrc === crc) {
+                setTimeout(refreshCheck, 30000);
+            } else {
+                window.location.reload(true);
+            }
+        });
+}
+
+setTimeout(refreshCheck, 1000);

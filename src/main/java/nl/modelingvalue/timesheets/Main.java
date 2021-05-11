@@ -16,11 +16,13 @@ public class Main {
             sheetMaker.matchPartsToProjects();
             sheetMaker.checkProjectConsistency();
             sheetMaker.downloadAllWorkItems();
+            sheetMaker.generateSupportFiles();
             sheetMaker.generateAll();
         } catch (Throwable t) {
             err(t);
             throw t;
         } finally {
+            sheetMaker.generateSupportFiles();
             sheetMaker.generateIndex();
         }
     }
