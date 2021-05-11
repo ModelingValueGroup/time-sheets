@@ -72,7 +72,7 @@ public class YearPersonMonthInfo extends Info {
     public void budgetStatusLog(String name) {
         List<Integer> entries = map.entrySet().stream().filter(e -> e.getValue().hasBudget).map(Entry::getKey).sorted(Comparator.reverseOrder()).toList();
         if (!entries.isEmpty()) {
-            info(String.format("detected budgets for %-4s in %s", name, entries));
+            info(String.format("* detected budgets for %-4s in %s", name, entries));
         }
     }
 

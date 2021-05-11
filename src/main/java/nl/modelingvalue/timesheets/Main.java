@@ -5,10 +5,9 @@ import static nl.modelingvalue.timesheets.util.LogAccu.info;
 
 public class Main {
     public static void main(String[] args) {
-        info("running with: ");
-        info("    TRACE_TO_STDERR   = " + Config.TRACE_TO_STDERR);
-        info("    TRACE_TO_HTML     = " + Config.TRACE_TO_HTML);
-        info("    CURRENT_YEAR_ONLY = " + Config.CURRENT_YEAR_ONLY);
+        info("= TRACE_TO_STDERR   = " + Config.TRACE_TO_STDERR);
+        info("= TRACE_TO_HTML     = " + Config.TRACE_TO_HTML);
+        info("= CURRENT_YEAR_ONLY = " + Config.CURRENT_YEAR_ONLY);
 
         SheetMaker sheetMaker = SheetMaker.read(args);
         try {
@@ -20,7 +19,9 @@ public class Main {
             sheetMaker.generateAll();
         } catch (Throwable t) {
             err(t);
+            throw t;
+        } finally {
+            sheetMaker.generateIndex();
         }
-        sheetMaker.generateIndex();
     }
 }
