@@ -112,7 +112,7 @@ td {
 	margin           : 20px 0 0 0;
 	font             : 1.1rem Verdana, serif;
 	font-weight      : bold;
-	width            : 6em;
+	width            : 8em;
 	text-align       : center;
 }
 .error {
@@ -128,7 +128,7 @@ td {
 	color : deepskyblue;
 }
 .budget {
-	background-color: palegreen;
+	background-color : palegreen;
 }
 ul {
 	font             : 1.1rem Inconsolata, monospace;
@@ -140,7 +140,8 @@ ul {
 	margin-bottom    : 2px;
 }
 li {
-	float : left;
+	float     : left;
+	min-width : 4em;
 }
 li a {
 	display         : block;
@@ -154,7 +155,8 @@ li a:hover:not(.active) {
 }
 .active {
 	background-color : #4caf50;
-	width            : 6em;
+	width            : 8em;
+	text-align       : left;
 	font-family      : Verdana, serif;
 	font-weight      : bold;
 }

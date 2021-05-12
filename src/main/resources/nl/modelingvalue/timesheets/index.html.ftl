@@ -15,11 +15,16 @@
     <ul>
         <li><a class="active">${page.name}</a></li>
         <#list page.years as y>
-            <li><a href="${href(page.name,y)}">${y}</a></li>
+            <#if y?has_content>
+                <li><a href="${href(page.name,y)}">${y}</a></li>
+            <#else >
+                <li>&nbsp;</li>
+            </#if>
         </#list>
     </ul>
 </#list>
-<button class="iconButton tooltipped" onclick='document.cookie = "pw=;expires=Thu, 01 Jan 1970 00:00:01 GMT";location.reload();'>
+<button class="iconButton tooltipped"
+        onclick='document.cookie = "pw=;expires=Thu, 01 Jan 1970 00:00:01 GMT";location.reload();'>
     <i class="fa fa-lock"></i>
     <span class="tooltiptext">remove password</span>
 </button>
