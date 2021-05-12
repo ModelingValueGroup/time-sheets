@@ -41,11 +41,16 @@ jobs:
           cd time-sheets-mvg
           echo '${{secrets.TIMESHEET_REPO_JSON}}' > time-sheets-secrets.json
           tar xf ../build/distributions/time-sheets.tar
+
           ###############################
-          night="$(echo "$((3<$(date +%H)))" | sed 's/0/false/;s/1/true/')"
-          export TIME_SHEETS_OPTS="-Duser.timezone=Europe/Amsterdam -DTRACE_TO_STDERR=true -DCURRENT_YEAR_ONLY=$night"
+          export TIME_SHEETS_OPTS=""
+          export TIME_SHEETS_OPTS+=" -Duser.timezone=Europe/Amsterdam"
+          export TIME_SHEETS_OPTS+=" -DTRACE_TO_STDERR=true"
+          #export TIME_SHEETS_OPTS+=" -DCURRENT_YEAR_ONLY=$(echo "$((3<$(date +%H)))" | sed 's/0/false/;s/1/true/')"
+
           time-sheets/bin/time-sheets time-sheets-secrets.json time-sheets-mvg.json
           ###############################
+
           rm -rf time-sheets time-sheets-secrets.json
 
       - name: "git-push"
