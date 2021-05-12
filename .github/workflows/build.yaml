@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ALLREP_TOKEN: "${{secrets.ALLREP_TOKEN}}"
+      FORCE_FULL_REGEN: true
     steps:
 
       #### prepare #####################################################################################################
@@ -36,6 +37,19 @@ jobs:
           token: "${{secrets.ALLREP_TOKEN}}"
           path: "time-sheets-mvg"
 
+      - name: "git-prepare"
+        run: |
+          cd time-sheets-mvg
+          git config --global user.email "automation@modelingvalue.nl"
+          git config --global user.name "Automation through Actions"
+          if [[ "$FORCE_FULL_REGEN" == false ]] && (( 3 < $(date +%H | sed 's/^0*//'))); then
+            echo "true"  > ~/only-this-year
+          else
+            echo "false" > ~/only-this-year
+            git rm raws/*
+            git rm docs/*
+          fi
+
       - name: "test-run"
         run: |
           cd time-sheets-mvg
@@ -46,7 +60,7 @@ jobs:
           export TIME_SHEETS_OPTS=""
           export TIME_SHEETS_OPTS+=" -Duser.timezone=Europe/Amsterdam"
           export TIME_SHEETS_OPTS+=" -DTRACE_TO_STDERR=true"
-          #export TIME_SHEETS_OPTS+=" -DCURRENT_YEAR_ONLY=$(echo "$((3<$(date +%H)))" | sed 's/0/false/;s/1/true/')"
+          export TIME_SHEETS_OPTS+=" -DCURRENT_YEAR_ONLY=$(cat ~/only-this-year)"
 
           time-sheets/bin/time-sheets time-sheets-secrets.json time-sheets-mvg.json
           ###############################
@@ -56,12 +70,10 @@ jobs:
       - name: "git-push"
         run: |
           cd time-sheets-mvg
-          git config --global user.email "automation@modelingvalue.nl"
-          git config --global user.name "Automation through Actions"
           git add raws/*
           git add docs/*
           if ! git diff --cached --exit-code >/dev/null; then
-            echo "will commit $(git status --porcelain | wc -l) files..."
+            echo "need to commit $(git status --porcelain | wc -l) files..."
             git commit -m "new timesheets @$(date)"
             git push
           else
