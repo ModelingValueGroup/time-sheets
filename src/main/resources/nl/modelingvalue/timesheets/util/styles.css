@@ -112,7 +112,7 @@ td {
 	margin           : 20px 0 0 0;
 	font             : 1.1rem Verdana, serif;
 	font-weight      : bold;
-	width            : 8em;
+	width            : 10em;
 	text-align       : center;
 }
 .error {
@@ -141,7 +141,7 @@ ul {
 }
 li {
 	float     : left;
-	min-width : 4em;
+	min-width : 80px;
 }
 li a {
 	display         : block;
@@ -155,7 +155,7 @@ li a:hover:not(.active) {
 }
 .active {
 	background-color : #4caf50;
-	width            : 8em;
+	width            : 10em;
 	text-align       : left;
 	font-family      : Verdana, serif;
 	font-weight      : bold;
