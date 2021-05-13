@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ALLREP_TOKEN: "${{secrets.ALLREP_TOKEN}}"
-      FORCE_FULL_REGEN: true
+      FORCE_FULL_REGEN: false
     steps:
 
       #### prepare #####################################################################################################
