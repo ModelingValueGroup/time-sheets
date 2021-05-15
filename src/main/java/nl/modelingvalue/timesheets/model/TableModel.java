@@ -9,25 +9,24 @@ import java.util.stream.IntStream;
 
 import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.info.DetailInfo;
+import nl.modelingvalue.timesheets.info.PartInfo;
 import nl.modelingvalue.timesheets.info.ProjectInfo;
 import nl.modelingvalue.timesheets.util.Jql;
 import nl.modelingvalue.timesheets.util.U;
 
 @SuppressWarnings("unused")
 public class TableModel extends Model<PageModel> {
-    public final String            name;
-    public final List<ProjectInfo> projectInfos;
+    public final PartInfo          partInfo;
     public final List<MonthColumn> months;
 
-    public TableModel(PageModel pageModel, String name, List<ProjectInfo> projectInfos) {
+    public TableModel(PageModel pageModel, PartInfo partInfo, List<ProjectInfo> projectInfos) {
         super(pageModel);
-        this.name         = name;
-        this.projectInfos = projectInfos;
-        this.months       = IntStream.rangeClosed(1, 12).mapToObj(MonthColumn::new).toList();
+        this.partInfo = partInfo;
+        this.months   = IntStream.rangeClosed(1, 12).mapToObj(MonthColumn::new).toList();
     }
 
     public String getName() {
-        return name;
+        return partInfo.id;
     }
 
     public String getYear() {
@@ -39,12 +38,12 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getWriteTimeUrl() {
-        Optional<ProjectInfo> activeProjectOpt = projectInfos.stream().filter(pi -> pi.serverInfo != null).findFirst();
+        Optional<ProjectInfo> activeProjectOpt = partInfo.allProjectInfosDeep().filter(pi -> pi.serverInfo != null).findFirst();
         if (activeProjectOpt.isEmpty()) {
             return Config.NOT_YET_IMPLEMENTED_URL;
         } else {
             String       url          = activeProjectOpt.get().serverInfo.url;
-            List<String> projectKeys  = projectInfos.stream().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).toList();
+            List<String> projectKeys  = partInfo.allProjectInfosDeep().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).toList();
             List<String> statusValues = List.of("In Progress", "In Review");
             String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
             return url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
@@ -52,25 +51,18 @@ public class TableModel extends Model<PageModel> {
     }
 
     public List<UserModel> getUsers() {
-        return projectInfos
+        return partInfo.yearPersonMonthInfo.getPersonInfos(parentModel.year)
                 .stream()
-                .flatMap(pi -> pi.yearPersonMonthInfo.getPersonInfos(parentModel.year).stream())
-                .distinct()
-                .sorted()
                 .map(pi -> new UserModel(this, pi))
                 .toList();
     }
 
-    public String getProjectName() {
-        return name;
-    }
-
     public boolean hasBudget() {
-        return projectInfos.stream().allMatch(pi -> pi.yearPersonMonthInfo.hasBudget(parentModel.year));
+        return partInfo.yearPersonMonthInfo.hasBudget(parentModel.year);
     }
 
     private long getSec(ToLongFunction<DetailInfo> f) {
-        return projectInfos.stream().mapToLong(pi -> pi.yearPersonMonthInfo.secFor(parentModel.year, f)).sum();
+        return partInfo.yearPersonMonthInfo.secFor(parentModel.year, f);
     }
 
     private long getSecWorked() {
@@ -119,7 +111,7 @@ public class TableModel extends Model<PageModel> {
         }
 
         private long getSec(ToLongFunction<DetailInfo> f) {
-            return projectInfos.stream().mapToLong(pi -> pi.yearPersonMonthInfo.secFor(parentModel.year, month, f)).sum();
+            return partInfo.yearPersonMonthInfo.secFor(parentModel.year, month, f);
         }
 
         private long getSecWorked() {

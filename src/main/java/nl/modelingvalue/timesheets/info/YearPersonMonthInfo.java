@@ -4,6 +4,7 @@ import static java.util.Collections.emptyMap;
 import static nl.modelingvalue.timesheets.info.DetailInfo.EMPTY_DETAIL;
 import static nl.modelingvalue.timesheets.util.LogAccu.info;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class YearPersonMonthInfo extends Info {
     }
 
     public List<PersonInfo> getPersonInfos(int year) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).keySet().stream().toList();
+        return map.getOrDefault(year, PersonMonthInfo.EMPTY).keySet().stream().sorted().toList();
     }
 
     public long secFor(int year, ToLongFunction<DetailInfo> f) {
@@ -66,11 +67,11 @@ public class YearPersonMonthInfo extends Info {
     }
 
     public boolean hasBudget(int year) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).hasBudget;
+        return map.getOrDefault(year, PersonMonthInfo.EMPTY).hasBudget();
     }
 
     public void budgetStatusLog(String name) {
-        List<Integer> entries = map.entrySet().stream().filter(e -> e.getValue().hasBudget).map(Entry::getKey).sorted(Comparator.reverseOrder()).toList();
+        List<Integer> entries = map.entrySet().stream().filter(e -> e.getValue().hasBudget()).map(Entry::getKey).sorted(Comparator.reverseOrder()).toList();
         if (!entries.isEmpty()) {
             info(String.format("* detected budgets for %-4s in %s", name, entries));
         }
@@ -79,11 +80,12 @@ public class YearPersonMonthInfo extends Info {
     private static class PersonMonthInfo extends HashMap<PersonInfo, Map<Integer, DetailInfo>> {
         private static final PersonMonthInfo EMPTY = new PersonMonthInfo();
 
-        private boolean hasBudget;
+        private final List<PersonMonthInfo> subsForHasBudget = new ArrayList<>();
+        private       boolean               hasBudget;
 
         public void add(PersonMonthInfo other) {
             other.forEach((person, mm) -> mm.forEach((month, detail) -> add(person, month, detail)));
-            hasBudget &= other.hasBudget;
+            subsForHasBudget.add(other);
         }
 
         public void add(PersonInfo person, int month, DetailInfo detail) {
@@ -124,6 +126,10 @@ public class YearPersonMonthInfo extends Info {
 
         public void determineHasBudget() {
             hasBudget = values().stream().anyMatch(mm -> mm.values().stream().anyMatch(d -> 0 < d.secBudget()));
+        }
+
+        public boolean hasBudget() {
+            return hasBudget || (!subsForHasBudget.isEmpty() && subsForHasBudget.stream().allMatch(PersonMonthInfo::hasBudget));
         }
     }
 }

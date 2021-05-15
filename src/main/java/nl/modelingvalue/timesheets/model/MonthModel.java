@@ -33,7 +33,7 @@ public class MonthModel extends Model<UserModel> {
     }
 
     private long getSec(ToLongFunction<DetailInfo> f) {
-        return parentModel.parentModel.projectInfos.stream().mapToLong(pi -> pi.yearPersonMonthInfo.secFor(person, year, month, f)).sum();
+        return parentModel.parentModel.partInfo.yearPersonMonthInfo.secFor(person, year, month, f);
     }
 
     public String getWorked() {
@@ -80,7 +80,7 @@ public class MonthModel extends Model<UserModel> {
     }
 
     private List<ProjectInfo> allProjectsOfMostFrequentJiraServer() {
-        return parentModel.parentModel.projectInfos.stream()
+        return parentModel.parentModel.partInfo.allProjectInfosDeep()
                 .filter(pi -> pi.serverInfo != null)
                 .collect(Collectors.groupingBy(pi -> pi.serverInfo))
                 .entrySet()

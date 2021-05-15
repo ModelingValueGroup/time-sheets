@@ -3,7 +3,6 @@ package nl.modelingvalue.timesheets.model;
 import java.util.List;
 
 import nl.modelingvalue.timesheets.info.PartInfo;
-import nl.modelingvalue.timesheets.info.ProjectInfo;
 
 public class PageModel extends Model<PageModel> {
     private final PartInfo partInfo;
@@ -24,14 +23,13 @@ public class PageModel extends Model<PageModel> {
     }
 
     public TableModel getTotalTable() {
-        List<ProjectInfo> projectInfos = partInfo.allProjectInfosDeep().toList();
-        return new TableModel(this, partInfo.id, projectInfos);
+        return new TableModel(this, partInfo, partInfo.allProjectInfosDeep().toList());
     }
 
     public List<TableModel> getSubTables() {
         return partInfo.allPartInfos()
                 .filter(pi -> pi.notEmpty(year))
-                .map(pi -> new TableModel(this, pi.id, pi.allProjectInfosDeep().toList()))
+                .map(pi -> new TableModel(this, pi, pi.allProjectInfosDeep().toList()))
                 .toList();
     }
 }
