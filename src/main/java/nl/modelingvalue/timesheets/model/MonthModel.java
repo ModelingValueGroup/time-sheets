@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
@@ -12,7 +13,6 @@ import java.util.stream.Collectors;
 import nl.modelingvalue.timesheets.info.DetailInfo;
 import nl.modelingvalue.timesheets.info.PersonInfo;
 import nl.modelingvalue.timesheets.info.ProjectInfo;
-import nl.modelingvalue.timesheets.util.U;
 import nl.modelingvalue.timesheets.util.UrlBuilder;
 
 @SuppressWarnings("unused")
@@ -37,17 +37,17 @@ public class MonthModel extends Model<UserModel> {
     }
 
     public String getWorked() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
+        return hoursFromSecFormatted(getSec(DetailInfo::secWorked));
     }
 
     public String getBudget() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secBudget));
+        return hoursFromSecFormatted(getSec(DetailInfo::secBudget));
     }
 
     public String getUrl() {
         List<ProjectInfo> projectInfos = allProjectsOfMostFrequentJiraServer();
         if (projectInfos.isEmpty()) {
-            return "";
+            return null;
         }
         LocalDate firstDay  = LocalDate.of(year, month, 1);
         LocalDate lastDay   = firstDay.plusMonths(1).minusDays(1);
@@ -88,5 +88,19 @@ public class MonthModel extends Model<UserModel> {
                 .max(Comparator.comparingInt(e -> e.getValue().size()))
                 .map(Entry::getValue)
                 .orElse(Collections.emptyList());
+    }
+
+    public String getDetails() {
+        Map<String, Long> all = parentModel.parentModel.partInfo.yearPersonMonthInfo.allSecFor(person, year, month, DetailInfo::secWorked);
+        if (all==null || all.values().stream().mapToLong(l->l).sum()==0) {
+            return null;
+        }
+        return all
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue() != 0)
+                .sorted(Entry.comparingByKey())
+                .map(e -> e.getKey() + ": " + hoursFromSecFormatted(e.getValue()))
+                .collect(Collectors.joining("<br>"));
     }
 }

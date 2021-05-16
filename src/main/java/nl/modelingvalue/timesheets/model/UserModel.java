@@ -26,15 +26,15 @@ public class UserModel extends Model<TableModel> {
     }
 
     public String getWorked() {
-        return U.hoursFromSecFormatted(getSec(DetailInfo::secWorked));
+        return hoursFromSecFormatted(getSec(DetailInfo::secWorked));
     }
 
     public String getBudget() {
-        return parentModel.hasBudget() ? U.hoursFromSecFormatted(getSec(DetailInfo::secBudget)) : "";
+        return parentModel.hasBudget() ? hoursFromSecFormatted(getSec(DetailInfo::secBudget)) : "";
     }
 
     public String getBudgetLeft() {
-        return parentModel.hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
+        return parentModel.hasBudget() ? hoursFromSecFormatted(getBudgetLeftSec()) : "";
     }
 
     public String getBudgetLeftClass() {

@@ -1,18 +1,23 @@
 <#--noinspection CssUnusedSymbol-->
 
-<#macro table model>
+<#macro table model main>
     <table cellspacing="0">
         <tr>
-            <td colspan=16 class="center header">${model.name} - ${model.year}</td>
+            <#if main==1>
+                <td></td>
+            </#if>
+            <td colspan=<#if main==1>14<#else>16</#if> class="center header">${model.name} - ${model.year}</td>
+            <#if main==1>
+                <td></td>
+            </#if>
             <#if model.hasBudget()>
                 <td class="budget" colspan=2></td>
             </#if>
         </tr>
         <tr>
             <td colspan=2 class="center">
-                <a class="tooltipped" target="_blank" href="${model.writeTimeUrl}">
-                    write time
-                    <span class="tooltiptext">${model.nbsp("Click here to register additional hours for ${model.name}.")}</span>
+                <a target="_blank" href="${model.writeTimeUrl}">
+                    jira
                 </a>
             </td>
             <#list model.months as m>
@@ -32,15 +37,22 @@
                 <#list u.months as m>
                     <td class="white">
                         <span class="spend">
-                        <#if m.url!="">
+                        <#if m.details?? && m.url??>
                             <a class="tooltipped" target="_blank" href="${m.url}">
-                        </#if>
                                 ${m.worked}
-                                <#if m.hasBudget()>
-                                    <span class="tooltiptext">${model.nbsp("budget: ${m.budget}")}</span>
-                                </#if>
-                                <#if m.url!="">
+                                <span class="tooltiptext">${model.nbsp("${m.details}")}</span>
                             </a>
+                        <#elseif m.url??>
+                            <a target="_blank" href="${m.url}">
+                                ${m.worked}
+                            </a>
+                        <#elseif m.details??>
+                            <div class="tooltipped">
+                                ${m.worked}
+                                <span class="tooltiptext">${model.nbsp("${m.details}")}</span>
+                            </div>
+                        <#else>
+                            ${m.worked}
                         </#if>
                     </span>
                         <span class="budget">${m.budget}</span>

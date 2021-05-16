@@ -23,7 +23,7 @@ public class PartInfo extends Info {
         super(fromJson);
         parts                = fromJson.parts;
         budgets             = fromJson.budgets;
-        yearPersonMonthInfo = new YearPersonMonthInfo();
+        yearPersonMonthInfo = new YearPersonMonthInfo(this);
     }
 
     public PartInfo makeActualPart() {

@@ -88,10 +88,6 @@ public class U {
         return quarters / 4.0;
     }
 
-    public static String hoursFromSecFormatted(long sec) {
-        return sec == 0 ? "&nbsp;&nbsp;" : String.format("%4.2f", hoursFromSec(sec));
-    }
-
     public static long copyResourceCrc(Path file) {
         return copyResourceCrc(file, file.getFileName().toString(), s -> s);
     }

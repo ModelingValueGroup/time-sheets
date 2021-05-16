@@ -78,15 +78,15 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getWorked() {
-        return U.hoursFromSecFormatted(getSecWorked());
+        return hoursFromSecFormatted(getSecWorked());
     }
 
     public String getBudget() {
-        return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()) : "";
+        return hasBudget() ? hoursFromSecFormatted(getSecBudget()) : "";
     }
 
     public String getBudgetLeft() {
-        return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
+        return hasBudget() ? hoursFromSecFormatted(getBudgetLeftSec()) : "";
     }
 
     public String getBudgetLeftClass() {
@@ -133,19 +133,19 @@ public class TableModel extends Model<PageModel> {
         }
 
         public String getWorked() {
-            return U.hoursFromSecFormatted(getSecWorked());
+            return hoursFromSecFormatted(getSecWorked());
         }
 
         public String getBudget() {
-            return hasBudget() ? U.hoursFromSecFormatted(getSecBudget()) : "";
+            return hasBudget() ? hoursFromSecFormatted(getSecBudget()) : "";
         }
 
         public String getBudgetLeft() {
-            return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftSec()) : "";
+            return hasBudget() ? hoursFromSecFormatted(getBudgetLeftSec()) : "";
         }
 
         public String getBudgetLeftCumulated() {
-            return hasBudget() ? U.hoursFromSecFormatted(getBudgetLeftCumulatedSec()) : "";
+            return hasBudget() ? hoursFromSecFormatted(getBudgetLeftCumulatedSec()) : "";
         }
 
         public String getBudgetLeftClass() {

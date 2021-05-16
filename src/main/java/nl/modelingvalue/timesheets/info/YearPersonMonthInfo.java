@@ -8,19 +8,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import nl.modelingvalue.timesheets.util.U;
 
 public class YearPersonMonthInfo extends Info {
-    private final Map<Integer, PersonMonthInfo> map = new HashMap<>();
+    private final PersonMonthInfo               EMPTY = new PersonMonthInfo(this);
+    private final PartInfo                      partInfo;
+    private final List<PartInfo>                subs  = new ArrayList<>();
+    private final Map<Integer, PersonMonthInfo> map   = new HashMap<>();
 
-    public YearPersonMonthInfo() {
+    public YearPersonMonthInfo(PartInfo partInfo) {
+        this.partInfo = partInfo;
     }
 
     public void add(Collection<YearBudgetInfo> budgets) {
@@ -30,12 +37,13 @@ public class YearPersonMonthInfo extends Info {
         map.values().forEach(PersonMonthInfo::determineHasBudget);
     }
 
-    public synchronized void add(YearPersonMonthInfo other) {
-        other.map.forEach((year, ami) -> map.computeIfAbsent(year, ab -> new PersonMonthInfo()).add(ami));
+    public synchronized void add(PartInfo pi) {
+        subs.add(pi);
+        pi.yearPersonMonthInfo.map.forEach((year, ami) -> map.computeIfAbsent(year, ab -> new PersonMonthInfo(this)).add(ami));
     }
 
     public synchronized void add(PersonInfo person, int year, int month, DetailInfo detail) {
-        map.computeIfAbsent(year, ab -> new PersonMonthInfo()).add(person, month, detail);
+        map.computeIfAbsent(year, ab -> new PersonMonthInfo(this)).add(person, month, detail);
     }
 
     public Stream<Integer> getYears() {
@@ -43,23 +51,40 @@ public class YearPersonMonthInfo extends Info {
     }
 
     public List<PersonInfo> getPersonInfos(int year) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).keySet().stream().sorted().toList();
+        return map.getOrDefault(year, EMPTY).keySet().stream().sorted().toList();
     }
 
     public long secFor(int year, ToLongFunction<DetailInfo> f) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).secFor(f);
+        return map.getOrDefault(year, EMPTY).secFor(f);
     }
 
     public long secFor(int year, int month, ToLongFunction<DetailInfo> f) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).secFor(month, f);
+        return map.getOrDefault(year, EMPTY).secFor(month, f);
     }
 
     public long secFor(PersonInfo personInfo, int year, ToLongFunction<DetailInfo> f) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).secFor(personInfo, f);
+        return map.getOrDefault(year, EMPTY).secFor(personInfo, f);
     }
 
     public long secFor(PersonInfo personInfo, int year, int month, ToLongFunction<DetailInfo> f) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).secFor(personInfo, month, f);
+        return map.getOrDefault(year, EMPTY).secFor(personInfo, month, f);
+    }
+
+    public Map<String, Long> allSecFor(PersonInfo personInfo, int year, int month, ToLongFunction<DetailInfo> f) {
+
+        Set<PartInfo> allSubs = new HashSet<>();
+        allSubs.add(partInfo);
+        allSubs.addAll(subs);
+
+        //noinspection StatementWithEmptyBody
+        while (allSubs.addAll(allSubs.stream().flatMap(pi -> pi.yearPersonMonthInfo.subs.stream()).toList())) {
+        }
+        if (allSubs.size()==1 && allSubs.iterator().next()==partInfo){
+            return null;
+        }
+        return allSubs.stream()
+                .filter(pi -> pi instanceof ProjectInfo)
+                .collect(Collectors.toMap(pi -> pi.id, pi -> pi.yearPersonMonthInfo.secFor(personInfo, year, month, f)));
     }
 
     public boolean notEmpty(int year) {
@@ -67,7 +92,7 @@ public class YearPersonMonthInfo extends Info {
     }
 
     public boolean hasBudget(int year) {
-        return map.getOrDefault(year, PersonMonthInfo.EMPTY).hasBudget();
+        return map.getOrDefault(year, EMPTY).hasBudget();
     }
 
     public void budgetStatusLog(String name) {
@@ -78,14 +103,17 @@ public class YearPersonMonthInfo extends Info {
     }
 
     private static class PersonMonthInfo extends HashMap<PersonInfo, Map<Integer, DetailInfo>> {
-        private static final PersonMonthInfo EMPTY = new PersonMonthInfo();
-
-        private final List<PersonMonthInfo> subsForHasBudget = new ArrayList<>();
+        private final YearPersonMonthInfo   owner;
         private       boolean               hasBudget;
+        private final List<PersonMonthInfo> subs = new ArrayList<>();
+
+        public PersonMonthInfo(YearPersonMonthInfo owner) {
+            this.owner = owner;
+        }
 
         public void add(PersonMonthInfo other) {
             other.forEach((person, mm) -> mm.forEach((month, detail) -> add(person, month, detail)));
-            subsForHasBudget.add(other);
+            subs.add(other);
         }
 
         public void add(PersonInfo person, int month, DetailInfo detail) {
@@ -129,7 +157,7 @@ public class YearPersonMonthInfo extends Info {
         }
 
         public boolean hasBudget() {
-            return hasBudget || (!subsForHasBudget.isEmpty() && subsForHasBudget.stream().allMatch(PersonMonthInfo::hasBudget));
+            return hasBudget || (!subs.isEmpty() && subs.stream().allMatch(PersonMonthInfo::hasBudget));
         }
     }
 }

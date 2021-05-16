@@ -3,6 +3,8 @@ package nl.modelingvalue.timesheets.model;
 import java.util.Map;
 import java.util.function.Function;
 
+import nl.modelingvalue.timesheets.util.U;
+
 public abstract class Model<P extends Model<?>> {
     public final P parentModel;
 
@@ -12,6 +14,10 @@ public abstract class Model<P extends Model<?>> {
 
     public static String nbsp(String a) {
         return a.replaceAll(" ", "&nbsp;");
+    }
+
+    public static String hoursFromSecFormatted(long sec) {
+        return sec == 0 ? "&nbsp;&nbsp;" : String.format("%4.2f", U.hoursFromSec(sec));
     }
 
     protected <K, M extends Model<?>> M getOrCreateSubModel(Map<K, M> map, K key, Function<K, M> modelCreator) {

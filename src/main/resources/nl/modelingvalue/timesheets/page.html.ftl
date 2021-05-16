@@ -13,11 +13,13 @@
 <body onload="setupBudgets()">
 
 <#if subTables?size!=1>
-    <@imported.table model=totalTable/>
+    <@imported.table model=totalTable main=1/>
+    <br>
+    <hr>
     <br>
 </#if>
 <#list subTables as sub>
-    <@imported.table model=sub/>
+    <@imported.table model=sub main=0/>
     <br>
 </#list>
 
