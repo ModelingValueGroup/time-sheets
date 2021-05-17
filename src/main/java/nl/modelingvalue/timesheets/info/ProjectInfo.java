@@ -6,9 +6,9 @@ import static de.micromata.jira.rest.core.jql.EOperator.EQUALS;
 import static de.micromata.jira.rest.core.jql.EOperator.GREATER_THAN_EQUALS;
 import static java.lang.System.currentTimeMillis;
 import static nl.modelingvalue.timesheets.util.Jql.DATE_FORMATTER;
+import static nl.modelingvalue.timesheets.util.LogAccu.debug;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
 import static nl.modelingvalue.timesheets.util.LogAccu.trace;
-import static nl.modelingvalue.timesheets.util.LogAccu.debug;
 import static nl.modelingvalue.timesheets.util.Pool.POOL;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
 import static nl.modelingvalue.timesheets.util.Pool.waitFor;
@@ -145,6 +145,6 @@ public class ProjectInfo extends PartInfo {
     }
 
     private String fullName() {
-        return serverInfo.id + "." + projectBean.getKey() ;
+        return serverInfo.id + "." + projectBean.getKey();
     }
 }

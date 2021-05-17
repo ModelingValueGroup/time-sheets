@@ -33,7 +33,7 @@ public class Pool {
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
-            throw new ProblemInFutureCalculation( e);
+            throw new ProblemInFutureCalculation(e);
         }
     }
 

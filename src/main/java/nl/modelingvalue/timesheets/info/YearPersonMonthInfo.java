@@ -2,16 +2,13 @@ package nl.modelingvalue.timesheets.info;
 
 import static java.util.Collections.emptyMap;
 import static nl.modelingvalue.timesheets.info.DetailInfo.EMPTY_DETAIL;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
@@ -79,7 +76,7 @@ public class YearPersonMonthInfo extends Info {
         //noinspection StatementWithEmptyBody
         while (allSubs.addAll(allSubs.stream().flatMap(pi -> pi.yearPersonMonthInfo.subs.stream()).toList())) {
         }
-        if (allSubs.size()==1 && allSubs.iterator().next()==partInfo){
+        if (allSubs.size() == 1 && allSubs.iterator().next() == partInfo) {
             return null;
         }
         return allSubs.stream()
@@ -93,13 +90,6 @@ public class YearPersonMonthInfo extends Info {
 
     public boolean hasBudget(int year) {
         return map.getOrDefault(year, EMPTY).hasBudget();
-    }
-
-    public void budgetStatusLog(String name) {
-        List<Integer> entries = map.entrySet().stream().filter(e -> e.getValue().hasBudget()).map(Entry::getKey).sorted(Comparator.reverseOrder()).toList();
-        if (!entries.isEmpty()) {
-            info(String.format("* detected budgets for %-4s in %s", name, entries));
-        }
     }
 
     private static class PersonMonthInfo extends HashMap<PersonInfo, Map<Integer, DetailInfo>> {

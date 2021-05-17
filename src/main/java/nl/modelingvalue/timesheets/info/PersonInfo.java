@@ -40,6 +40,6 @@ public class PersonInfo extends Info {
 
     public boolean isMatch(AccountBean ab) {
         return (ab.getDisplayName() != null && regexpPat.matcher(ab.getDisplayName()).find())
-                || (ab.getName() != null && regexpPat.matcher(ab.getName()).find());
+               || (ab.getName() != null && regexpPat.matcher(ab.getName()).find());
     }
 }

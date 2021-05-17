@@ -21,7 +21,7 @@ public class PartInfo extends Info {
 
     public PartInfo(PartInfo fromJson) {
         super(fromJson);
-        parts                = fromJson.parts;
+        parts               = fromJson.parts;
         budgets             = fromJson.budgets;
         yearPersonMonthInfo = new YearPersonMonthInfo(this);
     }

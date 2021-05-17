@@ -4,11 +4,19 @@
     <table cellspacing="0">
         <tr>
             <#if main==1>
-                <td></td>
+                <#if model.prevYear??>
+                    <td><a href="${model.prevYearUrl}">${model.prevYear}</a></td>
+                <#else>
+                    <td></td>
+                </#if>
             </#if>
             <td colspan=<#if main==1>14<#else>16</#if> class="center header">${model.name} - ${model.year}</td>
             <#if main==1>
-                <td></td>
+                <#if model.nextYear??>
+                    <td><a href="${model.nextYearUrl}">${model.nextYear}</a></td>
+                <#else>
+                    <td></td>
+                </#if>
             </#if>
             <#if model.hasBudget()>
                 <td class="budget" colspan=2></td>

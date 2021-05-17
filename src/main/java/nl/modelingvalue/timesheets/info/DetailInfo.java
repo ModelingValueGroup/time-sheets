@@ -1,8 +1,5 @@
 package nl.modelingvalue.timesheets.info;
 
-import nl.modelingvalue.timesheets.util.LogAccu;
-import nl.modelingvalue.timesheets.util.U;
-
 public final class DetailInfo {
     public static final DetailInfo EMPTY_DETAIL = new DetailInfo();
     private             long       secWorked;

@@ -5,8 +5,8 @@ import java.util.List;
 import nl.modelingvalue.timesheets.info.PartInfo;
 
 public class PageModel extends Model<PageModel> {
-    private final PartInfo partInfo;
-    public final  int      year;
+    public final PartInfo partInfo;
+    public final int      year;
 
     public PageModel(PartInfo partInfo, int year) {
         super(null);

@@ -32,7 +32,14 @@ public class IndexModel extends Model<IndexModel> {
                 .collect(Collectors.groupingBy(year_name -> year_name[1]))
                 .entrySet()
                 .stream()
-                .map(e -> new IndexPageModel(sheetMaker.parts.get(e.getKey()), e.getKey(), getYears(e.getValue().stream().map(year_name -> year_name[0]).collect(Collectors.toSet()))))
+                .map(e -> {
+                    PartInfo partInfo = sheetMaker.parts.get(e.getKey());
+                    List<String> years = getYears(e.getValue()
+                            .stream()
+                            .map(year_name -> year_name[0])
+                            .collect(Collectors.toSet()));
+                    return new IndexPageModel(partInfo, e.getKey(), years);
+                })
                 .sorted()
                 .toList();
     }

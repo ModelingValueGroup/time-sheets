@@ -94,7 +94,7 @@ public class MonthModel extends Model<UserModel> {
 
     public String getDetails() {
         Map<String, Long> all = parentModel.parentModel.partInfo.yearPersonMonthInfo.allSecFor(person, year, month, DetailInfo::secWorked);
-        if (all==null) {
+        if (all == null) {
             return null;
         }
         List<Entry<String, Long>> entries = all
@@ -103,9 +103,9 @@ public class MonthModel extends Model<UserModel> {
                 .filter(e -> e.getValue() != 0)
                 .sorted(Entry.comparingByKey())
                 .toList();
-        if (parentModel.parentModel.partInfo.yearPersonMonthInfo.hasBudget(year)){
+        if (parentModel.parentModel.partInfo.yearPersonMonthInfo.hasBudget(year)) {
             long budgetSec = parentModel.parentModel.partInfo.yearPersonMonthInfo.secFor(person, year, month, DetailInfo::secBudget);
-            if (0<budgetSec){
+            if (0 < budgetSec) {
                 entries = new ArrayList<>(entries);
                 entries.add(new AbstractMap.SimpleEntry<>("budget", budgetSec));
             }

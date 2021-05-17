@@ -42,7 +42,7 @@ public class PageEncryptWrapper {
         Path dir = file.getParent();
         Files.createDirectories(dir);
         String data = split(encrypt(htmlPage, password, IV));
-        long   crc = U.copyResourceCrc(file, WRAPPER_HTML_RSRC, s -> s.replace("@@@iv@@@", IV).replace("@@@data@@@", data));
+        long   crc  = U.copyResourceCrc(file, WRAPPER_HTML_RSRC, s -> s.replace("@@@iv@@@", IV).replace("@@@data@@@", data));
         return WRAPPER_SUPPORT_RSRCS.stream().mapToLong(fn -> U.copyResourceCrc(dir.resolve(fn))).reduce(crc, (l1, l2) -> l1 ^ l2);
     }
 

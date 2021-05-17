@@ -62,6 +62,7 @@ public class SheetMaker {
     public  Map<String, TeamInfo>   teams   = new HashMap<>();
     public  Map<String, PartInfo>   parts   = new HashMap<>();
     private long                    supportCrc;
+    private IndexModel              indexModel;
 
     public void init() {
         // json can not read objects of different class, so we replace parts here with the actual part:
@@ -150,6 +151,7 @@ public class SheetMaker {
     public void downloadAllWorkItems() {
         Pool.parallelExecAndWait(getProjectInfoParts(), ProjectInfo::downloadAllWorkItems);
         getPageInfoParts().forEach(PageInfo::accumulateSubs);
+        indexModel = new IndexModel(this);
     }
 
     public ServerInfo getServerBucketFor(ProjectBean project) {
@@ -180,7 +182,7 @@ public class SheetMaker {
 
     public void generateIndex() {
         trace("> generating " + INDEX_FILENAME);
-        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel(this));
+        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, indexModel);
     }
 
     public void generateSupportFiles() {
@@ -192,21 +194,20 @@ public class SheetMaker {
     }
 
     public void generateAll() {
-        parts.values().forEach(pi -> pi.yearPersonMonthInfo.budgetStatusLog(pi.id));//TODO remove later
-
         publish.partInfos.forEach(pi -> pi.getYears()
-                .filter(y -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == y)
-                .forEach(year -> generate(pi, year)));
+                .map(y -> new PageModel(pi, y))
+                .toList()
+                .stream()
+                .filter(pm -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == pm.year)
+                .forEach(model -> {
+                    String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, model.year, model.partInfo.id);
+                    trace("> generating " + outFile);
+                    generate(PAGE_HTML_TEMPLATE, outFile, model);
+                }));
     }
 
-    private void generate(PartInfo pi, Integer year) {
-        String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, year, pi.id);
-        trace("> generating " + outFile);
-        generate(PAGE_HTML_TEMPLATE, outFile, new PageModel(pi, year));
-    }
-
-    public void generate(String templateName, String outFileName, Model<?> projectModel) {
-        write(outFileName, new FreeMarkerEngine().process("nl/modelingvalue/timesheets/" + templateName + ".ftl", projectModel));
+    public void generate(String templateName, String outFileName, Model<?> model) {
+        write(outFileName, new FreeMarkerEngine().process("nl/modelingvalue/timesheets/" + templateName + ".ftl", model));
     }
 
     private void write(String outputFile, String page) {
@@ -226,5 +227,4 @@ public class SheetMaker {
             throw new Error("can not write output file", e);
         }
     }
-
 }

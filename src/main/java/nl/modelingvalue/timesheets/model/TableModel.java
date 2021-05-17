@@ -97,6 +97,22 @@ public class TableModel extends Model<PageModel> {
         return Config.NOT_YET_IMPLEMENTED_URL;
     }
 
+    public String getPrevYear() {
+        return null; //TODO future extension
+    }
+
+    public String getPrevYearUrl() {
+        return null; //TODO future extension
+    }
+
+    public String getNextYear() {
+        return null; //TODO future extension
+    }
+
+    public String getNextYearUrl() {
+        return null; //TODO future extension
+    }
+
     public class MonthColumn {
         public final int    month;
         public final String name;
