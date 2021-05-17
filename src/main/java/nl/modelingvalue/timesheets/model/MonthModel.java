@@ -2,6 +2,8 @@ package nl.modelingvalue.timesheets.model;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -92,14 +94,27 @@ public class MonthModel extends Model<UserModel> {
 
     public String getDetails() {
         Map<String, Long> all = parentModel.parentModel.partInfo.yearPersonMonthInfo.allSecFor(person, year, month, DetailInfo::secWorked);
-        if (all==null || all.values().stream().mapToLong(l->l).sum()==0) {
+        if (all==null) {
             return null;
         }
-        return all
+        List<Entry<String, Long>> entries = all
                 .entrySet()
                 .stream()
                 .filter(e -> e.getValue() != 0)
                 .sorted(Entry.comparingByKey())
+                .toList();
+        if (parentModel.parentModel.partInfo.yearPersonMonthInfo.hasBudget(year)){
+            long budgetSec = parentModel.parentModel.partInfo.yearPersonMonthInfo.secFor(person, year, month, DetailInfo::secBudget);
+            if (0<budgetSec){
+                entries = new ArrayList<>(entries);
+                entries.add(new AbstractMap.SimpleEntry<>("budget", budgetSec));
+            }
+        }
+        if (entries.stream().mapToLong(Entry::getValue).sum() == 0) {
+            return null;
+        }
+        return entries
+                .stream()
                 .map(e -> e.getKey() + ": " + hoursFromSecFormatted(e.getValue()))
                 .collect(Collectors.joining("<br>"));
     }
