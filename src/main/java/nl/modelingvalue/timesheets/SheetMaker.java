@@ -62,7 +62,6 @@ public class SheetMaker {
     public  Map<String, TeamInfo>   teams   = new HashMap<>();
     public  Map<String, PartInfo>   parts   = new HashMap<>();
     private long                    supportCrc;
-    private IndexModel              indexModel;
 
     public void init() {
         // json can not read objects of different class, so we replace parts here with the actual part:
@@ -151,7 +150,6 @@ public class SheetMaker {
     public void downloadAllWorkItems() {
         Pool.parallelExecAndWait(getProjectInfoParts(), ProjectInfo::downloadAllWorkItems);
         getPageInfoParts().forEach(PageInfo::accumulateSubs);
-        indexModel = new IndexModel(this);
     }
 
     public ServerInfo getServerBucketFor(ProjectBean project) {
@@ -182,7 +180,7 @@ public class SheetMaker {
 
     public void generateIndex() {
         trace("> generating " + INDEX_FILENAME);
-        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, indexModel);
+        generate(INDEX_HTML_TEMPLATE, INDEX_FILENAME, new IndexModel(this));
     }
 
     public void generateSupportFiles() {
