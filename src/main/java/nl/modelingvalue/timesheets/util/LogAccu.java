@@ -21,7 +21,7 @@ public class LogAccu {
 
     public static void err(Throwable t) {
         Throwable tt = t;
-        while (tt instanceof ProblemInFutureCalculation || tt instanceof ExecutionException) {
+        while (tt.getCause() != null && tt.getCause() != tt && (tt instanceof ProblemInFutureCalculation || tt instanceof ExecutionException || tt instanceof RuntimeException)) {
             tt = tt.getCause();
         }
         err("PROBLEM: " + tt.getClass().getSimpleName() + ": " + tt.getMessage());
