@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -36,8 +35,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import de.micromata.jira.rest.core.domain.AccountBean;
 import de.micromata.jira.rest.core.domain.ProjectBean;
-import nl.modelingvalue.timesheets.info.PageInfo;
-import nl.modelingvalue.timesheets.info.PartInfo;
+import nl.modelingvalue.timesheets.info.GroupInfo;
+import nl.modelingvalue.timesheets.info.Info;
 import nl.modelingvalue.timesheets.info.PersonInfo;
 import nl.modelingvalue.timesheets.info.ProjectInfo;
 import nl.modelingvalue.timesheets.info.PublishInfo;
@@ -56,22 +55,13 @@ public class SheetMaker {
     public static final Type SHEETMAKER_TYPE = new TypeToken<SheetMaker>() {
     }.getType();
 
-    public  PublishInfo             publish;
-    public  Map<String, ServerInfo> servers = new HashMap<>();
-    public  Map<String, PersonInfo> persons = new HashMap<>();
-    public  Map<String, TeamInfo>   teams   = new HashMap<>();
-    public  Map<String, PartInfo>   parts   = new HashMap<>();
-    private long                    supportCrc;
-
-    public void init() {
-        // json can not read objects of different class, so we replace parts here with the actual part:
-        parts = parts.entrySet().stream().collect(Collectors.toMap(Entry::getKey, e -> e.getValue().makeActualPart()));
-
-        persons.values().forEach(v -> v.init(this));
-        teams.values().forEach(v -> v.init(this));
-        parts.values().forEach(v -> v.init(this));
-        publish.init(this);
-    }
+    public  Map<String, ServerInfo>  servers  = new HashMap<>();
+    public  Map<String, PersonInfo>  persons  = new HashMap<>();
+    public  Map<String, TeamInfo>    teams    = new HashMap<>();
+    public  Map<String, GroupInfo>   groups   = new HashMap<>();
+    public  Map<String, ProjectInfo> projects = new HashMap<>();
+    public  PublishInfo              publish;
+    private long                     supportCrc;
 
     public static SheetMaker read(String[] args) {
         Stream<String> pathNameStream = args.length == 0 ? DEFAULT_DIRS.stream() : Arrays.stream(args);
@@ -82,21 +72,50 @@ public class SheetMaker {
         return paths.stream().map(SheetMaker::read).reduce(SheetMaker::merge).orElseGet(SheetMaker::new);
     }
 
-    public void connectAndAskProjects() {
+    public void init() {
+        servers.entrySet().removeIf(e -> e.getKey().startsWith("-"));
+        persons.entrySet().removeIf(e -> e.getKey().startsWith("-"));
+        teams.entrySet().removeIf(e -> e.getKey().startsWith("-"));
+        groups.entrySet().removeIf(e -> e.getKey().startsWith("-"));
+        projects.entrySet().removeIf(e -> e.getKey().startsWith("-"));
+
+        teams.put("*", new TeamInfo("*", teams.size(), persons.values().stream().filter(pi -> !pi.ignore && !pi.retired).map(pi -> pi.id).toList()));
+
         servers.values().forEach(v -> v.init(this));
-        parallelExecAndWait(servers.values().stream(), ServerInfo::connectAndAskProjects);
+        persons.values().forEach(v -> v.init(this));
+        teams.values().forEach(v -> v.init(this));
+        groups.values().forEach(v -> v.init(this));
+        projects.values().forEach(v -> v.init(this));
+
+        publish.init(this);
     }
 
-    public void matchPartsToProjects() {
-        parts.values().forEach(p -> p.matchPartsToProjects(getAllProjectBeans()));
+    public void connectAndAskProjects() {
+        parallelExecAndWait(servers.values().stream(), ServerInfo::connectAndAskProjects);
     }
 
     private List<ProjectBean> getAllProjectBeans() {
         return servers.values().stream().flatMap(s -> s.getProjectList().stream()).toList();
     }
 
+    public void resolveProjects() {
+        List<ProjectBean> allProjectBeans = getAllProjectBeans();
+        List<ProjectBean> matched = projects.values().stream()
+                .flatMap(p -> p.resolveProject(allProjectBeans).stream())
+                .toList();
+        matched.stream()
+                .collect(Collectors.groupingBy(i1 -> i1, Collectors.counting()))
+                .entrySet()
+                .stream()
+                .filter(e -> 1 < e.getValue())
+                .forEach(e -> err("the project " + e.getKey().getId() + " is matched " + e.getValue() + " times"));
+        allProjectBeans.stream()
+                .filter(pb -> !matched.contains(pb))
+                .forEach(pb -> err("the project " + pb.getId() + " is not matched at all"));
+    }
+
     public void checkProjectConsistency() {
-        Map<ProjectBean, Long> counted = getProjectInfoParts()
+        Map<ProjectBean, Long> counted = getProjectInfoStream()
                 .map(ProjectInfo::getProjectBean)
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
@@ -106,25 +125,20 @@ public class SheetMaker {
         unmatched.forEach(pb -> err("project '" + pb.getKey() + "' is never matched"));
     }
 
-    private Stream<ProjectInfo> getProjectInfoParts() {
-        return parts.values()
-                .stream()
-                .map(part -> part instanceof ProjectInfo ? ((ProjectInfo) part) : null)
-                .filter(Objects::nonNull);
+    private Stream<GroupInfo> getGroupInfoStream() {
+        return groups.values().stream();
     }
 
-    private Stream<PageInfo> getPageInfoParts() {
-        return parts.values()
-                .stream()
-                .map(part -> part instanceof PageInfo ? ((PageInfo) part) : null)
-                .filter(Objects::nonNull);
+    private Stream<ProjectInfo> getProjectInfoStream() {
+        return projects.values().stream();
     }
 
     private SheetMaker merge(SheetMaker s2) {
         merge(servers, s2.servers, "servers");
         merge(persons, s2.persons, "persons");
         merge(teams, s2.teams, "teams");
-        merge(parts, s2.parts, "parts");
+        merge(groups, s2.groups, "groups");
+        merge(projects, s2.projects, "projects");
         publish = publish != null ? publish : s2.publish;
         return this;
     }
@@ -148,16 +162,28 @@ public class SheetMaker {
     }
 
     public void downloadAllWorkItems() {
-        Pool.parallelExecAndWait(getProjectInfoParts(), ProjectInfo::downloadAllWorkItems);
-        getPageInfoParts().forEach(PageInfo::accumulateSubs);
+        Pool.parallelExecAndWait(getProjectInfoStream(), ProjectInfo::downloadAllWorkItems);
+        getGroupInfoStream().forEach(GroupInfo::accumulateSubs);
     }
 
     public ServerInfo getServerBucketFor(ProjectBean project) {
         return servers.values().stream().filter(s -> s.getProjectList().contains(project)).findFirst().orElseThrow();
     }
 
-    public PartInfo mustFindPart(String pn) {
-        return parts.values().stream().filter(pi -> pi.id.equals(pn)).findFirst().orElseThrow(() -> new Error("no part with name " + pn + " found"));
+    private <T extends Info> T resolve(String name, Map<String, T> map, String label) {
+        return map.values().stream().filter(pi -> pi.id.equals(name)).findFirst().orElseThrow(() -> new Error("no " + label + " with name " + name + " found"));
+    }
+
+    public GroupInfo resolveGroup(String name) {
+        return resolve(name, groups, "group");
+    }
+
+    public ProjectInfo resolveProject(String name) {
+        return resolve(name, projects, "project");
+    }
+
+    public TeamInfo resolveTeam(String name) {
+        return resolve(name, teams, "team");
     }
 
     public PersonInfo mustFindPerson(String pn) {
@@ -192,13 +218,13 @@ public class SheetMaker {
     }
 
     public void generateAll() {
-        publish.partInfos.forEach(pi -> pi.getYears()
+        publish.groupInfos.forEach(pi -> pi.getYears()
                 .map(y -> new PageModel(pi, y))
                 .toList()
                 .stream()
                 .filter(pm -> !CURRENT_YEAR_ONLY || LocalDate.now().getYear() == pm.year)
                 .forEach(model -> {
-                    String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, model.year, model.partInfo.id);
+                    String outFile = String.format(TIME_SHEET_FILENAME_TEMPLATE, model.year, model.pgInfo.id);
                     trace("> generating " + outFile);
                     generate(PAGE_HTML_TEMPLATE, outFile, model);
                 }));

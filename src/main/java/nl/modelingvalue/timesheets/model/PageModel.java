@@ -2,20 +2,20 @@ package nl.modelingvalue.timesheets.model;
 
 import java.util.List;
 
-import nl.modelingvalue.timesheets.info.PartInfo;
+import nl.modelingvalue.timesheets.info.PGInfo;
 
 public class PageModel extends Model<PageModel> {
-    public final PartInfo partInfo;
-    public final int      year;
+    public final PGInfo pgInfo;
+    public final int    year;
 
-    public PageModel(PartInfo partInfo, int year) {
+    public PageModel(PGInfo pgInfo, int year) {
         super(null);
-        this.partInfo = partInfo;
-        this.year     = year;
+        this.pgInfo = pgInfo;
+        this.year   = year;
     }
 
     public String getName() {
-        return partInfo.id;
+        return pgInfo.id;
     }
 
     public String getYear() {
@@ -23,11 +23,11 @@ public class PageModel extends Model<PageModel> {
     }
 
     public TableModel getTotalTable() {
-        return new TableModel(this, partInfo, partInfo.allProjectInfosDeep().toList());
+        return new TableModel(this, pgInfo, pgInfo.allProjectInfosDeep().toList());
     }
 
     public List<TableModel> getSubTables() {
-        return partInfo.allPartInfos()
+        return pgInfo.allSubInfos()
                 .filter(pi -> pi.notEmpty(year))
                 .map(pi -> new TableModel(this, pi, pi.allProjectInfosDeep().toList()))
                 .toList();

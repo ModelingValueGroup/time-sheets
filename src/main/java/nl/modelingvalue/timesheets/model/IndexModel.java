@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.SheetMaker;
-import nl.modelingvalue.timesheets.info.PartInfo;
 import nl.modelingvalue.timesheets.util.LogAccu;
 
 public class IndexModel extends Model<IndexModel> {
@@ -24,27 +23,27 @@ public class IndexModel extends Model<IndexModel> {
     public IndexModel(SheetMaker sheetMaker) {
         super(null);
         this.sheetMaker = sheetMaker;
-        this.allYears   = year_name_stream().map(y_n -> y_n[0]).distinct().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        this.allYears   = year_name_StreamFromFiles().map(y_n -> y_n[0]).distinct().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
     }
 
-    public List<IndexPageModel> getPages() {
-        return year_name_stream()
+    public List<IndexGroupModel> getGroups() {
+        return year_name_StreamFromFiles()
                 .collect(Collectors.groupingBy(year_name -> year_name[1]))
                 .entrySet()
                 .stream()
+                .filter(e -> sheetMaker.groups.containsKey(e.getKey()))
                 .map(e -> {
-                    PartInfo partInfo = sheetMaker.parts.get(e.getKey());
                     List<String> years = getYears(e.getValue()
                             .stream()
                             .map(year_name -> year_name[0])
                             .collect(Collectors.toSet()));
-                    return new IndexPageModel(partInfo, e.getKey(), years);
+                    return new IndexGroupModel(e.getKey(), sheetMaker.publish.indexOf(e.getKey()), years);
                 })
                 .sorted()
                 .toList();
     }
 
-    private Stream<String[]> year_name_stream() {
+    private Stream<String[]> year_name_StreamFromFiles() {
         try {
             return Files.list(PUBLIC_DIR)
                     .map(p -> p.getFileName().toString())
@@ -84,14 +83,14 @@ public class IndexModel extends Model<IndexModel> {
         return String.format(Config.TIME_SHEET_FILENAME_TEMPLATE, Integer.parseInt(year), name);
     }
 
-    public static class IndexPageModel implements Comparable<IndexPageModel> {
+    public static class IndexGroupModel implements Comparable<IndexGroupModel> {
         private final String       name;
         private final int          index;
         private final List<String> years;
 
-        public IndexPageModel(PartInfo partInfo, String name, List<String> years) {
+        public IndexGroupModel(String name, int index, List<String> years) {
             this.name  = name;
-            this.index = partInfo == null ? Integer.MAX_VALUE : partInfo.index;
+            this.index = index;
             this.years = years;
         }
 
@@ -104,7 +103,7 @@ public class IndexModel extends Model<IndexModel> {
         }
 
         @Override
-        public int compareTo(IndexPageModel o) {
+        public int compareTo(IndexGroupModel o) {
             return index == o.index ? String.CASE_INSENSITIVE_ORDER.compare(name, o.name) : Integer.compare(index, o.index);
         }
     }

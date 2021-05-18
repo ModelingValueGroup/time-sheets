@@ -11,9 +11,9 @@ public class Main {
 
         SheetMaker sheetMaker = SheetMaker.read(args);
         try {
-            sheetMaker.connectAndAskProjects();
             sheetMaker.init();
-            sheetMaker.matchPartsToProjects();
+            sheetMaker.connectAndAskProjects();
+            sheetMaker.resolveProjects();
             sheetMaker.checkProjectConsistency();
             sheetMaker.downloadAllWorkItems();
             sheetMaker.generateSupportFiles();

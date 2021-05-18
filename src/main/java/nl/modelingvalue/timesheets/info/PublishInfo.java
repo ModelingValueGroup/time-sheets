@@ -7,9 +7,9 @@ import nl.modelingvalue.timesheets.SheetMaker;
 
 @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection", "FieldMayBeFinal"})
 public class PublishInfo extends Info {
-    public String         password;
-    public List<String>   parts = new ArrayList<>();
-    public List<PartInfo> partInfos;
+    public String          password;
+    public List<String>    groups = new ArrayList<>();
+    public List<GroupInfo> groupInfos;
 
     public PublishInfo() {
     }
@@ -17,6 +17,10 @@ public class PublishInfo extends Info {
     @Override
     public void init(SheetMaker sheetMaker) {
         super.init(sheetMaker);
-        partInfos = parts.stream().map(sheetMaker::mustFindPart).toList();
+        groupInfos = groups.stream().map(sheetMaker::resolveGroup).toList();
+    }
+
+    public int indexOf(String name) {
+        return groups.indexOf(name);
     }
 }

@@ -35,7 +35,7 @@ public class MonthModel extends Model<UserModel> {
     }
 
     private long getSec(ToLongFunction<DetailInfo> f) {
-        return parentModel.parentModel.partInfo.yearPersonMonthInfo.secFor(person, year, month, f);
+        return parentModel.parentModel.pgInfo.yearPersonMonthInfo.secFor(person, year, month, f);
     }
 
     public String getWorked() {
@@ -82,7 +82,7 @@ public class MonthModel extends Model<UserModel> {
     }
 
     private List<ProjectInfo> allProjectsOfMostFrequentJiraServer() {
-        return parentModel.parentModel.partInfo.allProjectInfosDeep()
+        return parentModel.parentModel.pgInfo.allProjectInfosDeep()
                 .filter(pi -> pi.serverInfo != null)
                 .collect(Collectors.groupingBy(pi -> pi.serverInfo))
                 .entrySet()
@@ -93,7 +93,7 @@ public class MonthModel extends Model<UserModel> {
     }
 
     public String getDetails() {
-        Map<String, Long> all = parentModel.parentModel.partInfo.yearPersonMonthInfo.allSecFor(person, year, month, DetailInfo::secWorked);
+        Map<String, Long> all = parentModel.parentModel.pgInfo.yearPersonMonthInfo.allSecFor(person, year, month, DetailInfo::secWorked);
         if (all == null) {
             return null;
         }
@@ -103,8 +103,8 @@ public class MonthModel extends Model<UserModel> {
                 .filter(e -> e.getValue() != 0)
                 .sorted(Entry.comparingByKey())
                 .toList();
-        if (parentModel.parentModel.partInfo.yearPersonMonthInfo.hasBudget(year)) {
-            long budgetSec = parentModel.parentModel.partInfo.yearPersonMonthInfo.secFor(person, year, month, DetailInfo::secBudget);
+        if (parentModel.parentModel.pgInfo.yearPersonMonthInfo.hasBudget(year)) {
+            long budgetSec = parentModel.parentModel.pgInfo.yearPersonMonthInfo.secFor(person, year, month, DetailInfo::secBudget);
             if (0 < budgetSec) {
                 entries = new ArrayList<>(entries);
                 entries.add(new AbstractMap.SimpleEntry<>("budget", budgetSec));

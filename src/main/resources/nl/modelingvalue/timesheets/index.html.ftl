@@ -11,12 +11,12 @@
 </head>
 <body>
 
-<#list pages as page>
+<#list groups as g>
     <ul>
-        <li><a class="active">${page.name}</a></li>
-        <#list page.years as y>
+        <li><a class="active">${g.name}</a></li>
+        <#list g.years as y>
             <#if y?has_content>
-                <li><a href="${href(page.name,y)}">${y}</a></li>
+                <li><a href="${href(g.name,y)}">${y}</a></li>
             <#else >
                 <li>&nbsp;</li>
             </#if>

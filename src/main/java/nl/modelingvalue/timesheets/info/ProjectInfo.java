@@ -34,22 +34,15 @@ import nl.modelingvalue.timesheets.util.LogAccu;
 import nl.modelingvalue.timesheets.util.U;
 import nl.modelingvalue.timesheets.util.Yielder;
 
-public class ProjectInfo extends PartInfo {
+public class ProjectInfo extends PGInfo {
     public ProjectBean projectBean;
     public ServerInfo  serverInfo;
-
-    public ProjectInfo() {
-    }
-
-    public ProjectInfo(PartInfo fromJson) {
-        super(fromJson);
-    }
 
     public void init(SheetMaker sheetMaker) {
         super.init(sheetMaker);
     }
 
-    public void matchPartsToProjects(List<ProjectBean> allProjectBeans) {
+    public List<ProjectBean> resolveProject(List<ProjectBean> allProjectBeans) {
         List<ProjectBean> matching = allProjectBeans.stream().filter(pb -> pb.getKey().equals(id)).toList();
         switch (matching.size()) {
         case 1 -> {
@@ -59,6 +52,12 @@ public class ProjectInfo extends PartInfo {
         case 0 -> err("no project matches '" + id + "'");
         default -> err("multiple projects match '" + id + "': " + matching.stream().map(pb -> pb.getKey() + "=(" + pb.getName() + ")").toList());
         }
+        return matching;
+    }
+
+    @Override
+    public void accumulateSubs() {
+        // no subs, nothing to do here
     }
 
     public ProjectBean getProjectBean() {
@@ -69,7 +68,7 @@ public class ProjectInfo extends PartInfo {
         return Stream.of(this);
     }
 
-    public Stream<PartInfo> allPartInfos() {
+    public Stream<PGInfo> allSubInfos() {
         return Stream.of(this);
     }
 
@@ -83,7 +82,7 @@ public class ProjectInfo extends PartInfo {
                     int  year  = wb.getStartedDate().getYear();
                     int  month = wb.getStartedDate().getMonthValue();
                     long sec   = wb.getTimeSpentSeconds();
-                    if (U.hoursFromSec(sec) < 0.25) {
+                    if (U.hoursFromSec(sec) < 0.25 && 2015 < year) {
                         LogAccu.err(String.format("extremely short work item detected: %5d sec for %-12s issue %-12s at %s (probably a human entry error!)", sec, person.id, issue.getKey(), wb.getStartedDate()));
                     }
                     yearPersonMonthInfo.add(person, year, month, new DetailInfo(sec, 0));

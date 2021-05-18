@@ -42,7 +42,7 @@ public class UserModel extends Model<TableModel> {
     }
 
     public long getSec(ToLongFunction<DetailInfo> f) {
-        return parentModel.partInfo.yearPersonMonthInfo.secFor(personInfo, parentModel.parentModel.year, f);
+        return parentModel.pgInfo.yearPersonMonthInfo.secFor(personInfo, parentModel.parentModel.year, f);
     }
 
     public long getBudgetLeftSec() {

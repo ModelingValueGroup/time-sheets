@@ -19,12 +19,12 @@ import nl.modelingvalue.timesheets.util.U;
 
 public class YearPersonMonthInfo extends Info {
     private final PersonMonthInfo               EMPTY = new PersonMonthInfo(this);
-    private final PartInfo                      partInfo;
-    private final List<PartInfo>                subs  = new ArrayList<>();
+    private final PGInfo                        pgInfo;
+    private final List<PGInfo>                  subs  = new ArrayList<>();
     private final Map<Integer, PersonMonthInfo> map   = new HashMap<>();
 
-    public YearPersonMonthInfo(PartInfo partInfo) {
-        this.partInfo = partInfo;
+    public YearPersonMonthInfo(PGInfo pgInfo) {
+        this.pgInfo = pgInfo;
     }
 
     public void add(Collection<YearBudgetInfo> budgets) {
@@ -34,7 +34,7 @@ public class YearPersonMonthInfo extends Info {
         map.values().forEach(PersonMonthInfo::determineHasBudget);
     }
 
-    public synchronized void add(PartInfo pi) {
+    public synchronized void add(PGInfo pi) {
         subs.add(pi);
         pi.yearPersonMonthInfo.map.forEach((year, ami) -> map.computeIfAbsent(year, ab -> new PersonMonthInfo(this)).add(ami));
     }
@@ -47,8 +47,8 @@ public class YearPersonMonthInfo extends Info {
         return map.keySet().stream();
     }
 
-    public List<PersonInfo> getPersonInfos(int year) {
-        return map.getOrDefault(year, EMPTY).keySet().stream().sorted().toList();
+    public Stream<PersonInfo> getPersonInfoStream(int year) {
+        return map.getOrDefault(year, EMPTY).keySet().stream().sorted();
     }
 
     public long secFor(int year, ToLongFunction<DetailInfo> f) {
@@ -69,14 +69,14 @@ public class YearPersonMonthInfo extends Info {
 
     public Map<String, Long> allSecFor(PersonInfo personInfo, int year, int month, ToLongFunction<DetailInfo> f) {
 
-        Set<PartInfo> allSubs = new HashSet<>();
-        allSubs.add(partInfo);
+        Set<PGInfo> allSubs = new HashSet<>();
+        allSubs.add(pgInfo);
         allSubs.addAll(subs);
 
         //noinspection StatementWithEmptyBody
         while (allSubs.addAll(allSubs.stream().flatMap(pi -> pi.yearPersonMonthInfo.subs.stream()).toList())) {
         }
-        if (allSubs.size() == 1 && allSubs.iterator().next() == partInfo) {
+        if (allSubs.size() == 1 && allSubs.iterator().next() == pgInfo) {
             return null;
         }
         return allSubs.stream()
@@ -107,9 +107,11 @@ public class YearPersonMonthInfo extends Info {
         }
 
         public void add(PersonInfo person, int month, DetailInfo detail) {
-            Map<Integer, DetailInfo> m2         = computeIfAbsent(person, y -> new HashMap<>());
-            DetailInfo               detailInfo = m2.computeIfAbsent(month, m -> new DetailInfo());
-            detailInfo.add(detail);
+            if (owner.pgInfo.isTeamMember(person)) {
+                Map<Integer, DetailInfo> m2         = computeIfAbsent(person, y -> new HashMap<>());
+                DetailInfo               detailInfo = m2.computeIfAbsent(month, m -> new DetailInfo());
+                detailInfo.add(detail);
+            }
         }
 
         public long secFor(ToLongFunction<DetailInfo> f) {

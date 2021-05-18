@@ -10,10 +10,9 @@ public abstract class Info implements Comparable<Info> {
     public Info() {
     }
 
-    public Info(PartInfo fromJson) {
-        id         = fromJson.id;
-        index      = fromJson.index;
-        sheetMaker = fromJson.sheetMaker;
+    public Info(String id, int index) {
+        this.id    = id;
+        this.index = index;
     }
 
     public void init(SheetMaker sheetMaker) {
