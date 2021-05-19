@@ -35,6 +35,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import de.micromata.jira.rest.core.domain.AccountBean;
 import de.micromata.jira.rest.core.domain.ProjectBean;
+import de.micromata.jira.rest.core.util.Wrapper;
 import nl.modelingvalue.timesheets.info.GroupInfo;
 import nl.modelingvalue.timesheets.info.Info;
 import nl.modelingvalue.timesheets.info.PersonInfo;
@@ -45,6 +46,7 @@ import nl.modelingvalue.timesheets.info.TeamInfo;
 import nl.modelingvalue.timesheets.model.IndexModel;
 import nl.modelingvalue.timesheets.model.Model;
 import nl.modelingvalue.timesheets.model.PageModel;
+import nl.modelingvalue.timesheets.util.FatalException;
 import nl.modelingvalue.timesheets.util.FreeMarkerEngine;
 import nl.modelingvalue.timesheets.util.GsonUtils;
 import nl.modelingvalue.timesheets.util.PageEncryptWrapper;
@@ -67,7 +69,7 @@ public class SheetMaker {
         Stream<String> pathNameStream = args.length == 0 ? DEFAULT_DIRS.stream() : Arrays.stream(args);
         List<Path>     paths          = pathNameStream.map(Paths::get).flatMap(fd -> U.selectJsonFiles(fd, DEFAULT_NAME_PAT)).toList();
         if (paths.isEmpty()) {
-            throw new Error("no sheetMaker files found, nothing to work on");
+            throw new FatalException("no sheetMaker config files found, nothing to work on");
         }
         return paths.stream().map(SheetMaker::read).reduce(SheetMaker::merge).orElseGet(SheetMaker::new);
     }
@@ -144,10 +146,10 @@ public class SheetMaker {
     }
 
     private <T> void merge(Map<String, T> map1, Map<String, T> map2, String name) {
-        Set<String> keys = new HashSet<>(map1.keySet());
-        keys.retainAll(map2.keySet());
-        if (!keys.isEmpty()) {
-            throw new Error("sheetMaker member double define: " + keys + " in " + name);
+        Set<String> overlappingKeys = new HashSet<>(map1.keySet());
+        overlappingKeys.retainAll(map2.keySet());
+        if (!overlappingKeys.isEmpty()) {
+            throw new FatalException("sheetMaker config has double defines: " + overlappingKeys + " in " + name);
         }
         map1.putAll(map2);
     }
@@ -157,7 +159,7 @@ public class SheetMaker {
         try {
             return GsonUtils.withSpecials().fromJson(new JsonReader(Files.newBufferedReader(f)), SHEETMAKER_TYPE);
         } catch (IOException e) {
-            throw new Error("can not read " + f.toAbsolutePath(), e);
+            throw new Wrapper("can not read " + f.toAbsolutePath(), e);
         }
     }
 
@@ -171,7 +173,11 @@ public class SheetMaker {
     }
 
     private <T extends Info> T resolve(String name, Map<String, T> map, String label) {
-        return map.values().stream().filter(pi -> pi.id.equals(name)).findFirst().orElseThrow(() -> new Error("no " + label + " with name " + name + " found"));
+        T o = map.get(name);
+        if (o == null) {
+            throw new FatalException("no " + label + " with name " + name + " found");
+        }
+        return o;
     }
 
     public GroupInfo resolveGroup(String name) {
@@ -186,8 +192,8 @@ public class SheetMaker {
         return resolve(name, teams, "team");
     }
 
-    public PersonInfo mustFindPerson(String pn) {
-        return persons.values().stream().filter(pi -> pi.id.equals(pn)).findFirst().orElseThrow(() -> new Error("no person with name " + pn + " found"));
+    public PersonInfo resolvePerson(String name) {
+        return resolve(name, persons, "person");
     }
 
     public PersonInfo findPersonOrCreate(AccountBean ab) {
@@ -200,7 +206,7 @@ public class SheetMaker {
                 persons.put(newPerson.id, newPerson);
                 yield newPerson;
             }
-            default -> throw new Error("multiple persons match '" + ab.getDisplayName() + "': " + matching.stream().map(pi -> pi.id).toList());
+            default -> throw new FatalException("multiple persons match '" + ab.getDisplayName() + "': " + matching.stream().map(pi -> pi.id).toList());
         };
     }
 
@@ -248,7 +254,7 @@ public class SheetMaker {
                 U.writeStringCrc(pubCrcFile, crcJson);
             }
         } catch (IOException e) {
-            throw new Error("can not write output file", e);
+            throw new Wrapper("can not write output file", e);
         }
     }
 }

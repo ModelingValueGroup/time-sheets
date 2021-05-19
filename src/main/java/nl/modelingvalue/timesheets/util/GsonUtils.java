@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import de.micromata.jira.rest.core.util.Wrapper;
 
 /**
  * This is an implementation of a workaround for deserialisation of java 16 records by gson.
@@ -90,7 +91,7 @@ public class GsonUtils {
                                 constructor.setAccessible(true);
                                 return constructor.newInstance(args);
                             } catch (NoSuchMethodException | InstantiationException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                                throw new RuntimeException(e);
+                                throw new Wrapper(e);
                             }
                         }
                     }
@@ -145,7 +146,7 @@ public class GsonUtils {
                         return rawType.getConstructor();
                     }
                 } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
+                    throw new Wrapper(e);
                 }
             };
 
@@ -182,7 +183,7 @@ public class GsonUtils {
                             return (T) x;
 
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                            throw new RuntimeException(e);
+                            throw new Wrapper(e);
                         }
                     }
                 }

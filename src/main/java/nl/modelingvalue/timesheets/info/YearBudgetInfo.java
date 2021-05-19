@@ -3,6 +3,7 @@ package nl.modelingvalue.timesheets.info;
 import java.util.HashMap;
 
 import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.util.FatalException;
 
 public class YearBudgetInfo extends HashMap<String, PersonBudgetInfo> {
     public  String     id;
@@ -22,7 +23,7 @@ public class YearBudgetInfo extends HashMap<String, PersonBudgetInfo> {
         try {
             return Integer.parseInt(id);
         } catch (NumberFormatException e) {
-            throw new Error("the id of the budget entry '" + id + "' should be an integer");
+            throw new FatalException("the id of budget entry '" + id + "' should be an integer");
         }
     }
 }

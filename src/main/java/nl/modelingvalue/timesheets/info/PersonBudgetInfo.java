@@ -18,6 +18,6 @@ public class PersonBudgetInfo extends Info {
         if (months == null) {
             months = IntStream.range(0, 12).mapToDouble(i -> allMonths).toArray();
         }
-        personInfo = sheetMaker.mustFindPerson(id);
+        personInfo = sheetMaker.resolvePerson(id);
     }
 }

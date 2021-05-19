@@ -21,6 +21,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import de.micromata.jira.rest.core.util.Wrapper;
+
 public class PageEncryptWrapper {
     private static final int          LINE_LENGTH           = 128;
     private static final String       IV                    = "5D9r9ZVzEYYgha93/aUK2w==";
@@ -64,7 +66,7 @@ public class PageEncryptWrapper {
             cipher.init(Cipher.ENCRYPT_MODE, key, spec);
             return Base64.getEncoder().encodeToString(cipher.doFinal(data.getBytes(UTF_8)));
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException e) {
-            throw new Error("could not wrap page with crypt page", e);
+            throw new Wrapper("could not wrap page with crypt page", e);
         }
     }
 

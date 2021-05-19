@@ -9,15 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import de.micromata.jira.rest.core.util.Wrapper;
+
 public class Pool {
     public static final boolean         FORCE_SEQUENCIAL = Boolean.getBoolean("FORCE_SEQUENCIAL");
     public static final ExecutorService POOL             = Executors.newCachedThreadPool(new DaemonThreadFactory("POOL"));
-
-    public static class ProblemInFutureCalculation extends Error {
-        public ProblemInFutureCalculation(Exception cause) {
-            super(cause);
-        }
-    }
 
     public static <T> void parallelExecAndWait(Stream<T> stream, Consumer<T> consumer) {
         if (FORCE_SEQUENCIAL) {
@@ -33,7 +29,7 @@ public class Pool {
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
-            throw new ProblemInFutureCalculation(e);
+            throw new Wrapper(e);
         }
     }
 

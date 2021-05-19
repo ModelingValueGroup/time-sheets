@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import de.micromata.jira.rest.core.util.Wrapper;
 import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.SheetMaker;
 import nl.modelingvalue.timesheets.util.LogAccu;
@@ -51,7 +52,7 @@ public class IndexModel extends Model<IndexModel> {
                     .map(s -> s.replaceFirst("timesheet-", "").replaceFirst("[.]html$", ""))
                     .map(s -> s.split("-", 2));
         } catch (IOException e) {
-            throw new Error("unepected error during listing of dir " + PUBLIC_DIR);
+            throw new Wrapper("problem during listing of dir " + PUBLIC_DIR, e);
         }
     }
 

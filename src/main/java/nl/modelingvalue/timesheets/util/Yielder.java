@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import de.micromata.jira.rest.core.util.Wrapper;
+
 /**
  * inspired by 'Producer' by Luke Hutchison (https://github.com/lukehutch/Producer)
  *
@@ -117,7 +119,7 @@ public class Yielder<T> implements Iterable<T> {
             }
             queue.put(Optional.of(t));
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new Wrapper(e);
         }
     }
 
@@ -169,9 +171,9 @@ public class Yielder<T> implements Iterable<T> {
                     queue.clear();
                     try {
                         queue.put(Optional.empty());
-                    } catch (InterruptedException e1) {
+                    } catch (InterruptedException e) {
                         // Should not happen
-                        throw new RuntimeException("Could not push end-of-queue marker");
+                        throw new Wrapper("Could not push end-of-queue marker", e);
                     }
                 }
             });
@@ -217,12 +219,13 @@ public class Yielder<T> implements Iterable<T> {
                     // Re-throw as RuntimeException, since the iterator sequence
                     // will end earlier than expected, and the receiver should not
                     // assume the returned sequence is the full sequence
-                    throw new RuntimeException(e);
+                    throw new Wrapper(e);
                 }
             }
             // If producer threw an exception, re-throw it in the consumer
-            if (producerException.get() != null) {
-                throw new RuntimeException("Yielder threw an exception", producerException.get());
+            Throwable t = producerException.get();
+            if (t != null) {
+                throw new Wrapper("Yielder threw an exception", t);
             }
         }
     }

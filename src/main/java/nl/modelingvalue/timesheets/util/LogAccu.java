@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import de.micromata.jira.rest.core.util.Wrapper;
 import nl.modelingvalue.timesheets.Config;
-import nl.modelingvalue.timesheets.util.Pool.ProblemInFutureCalculation;
 
 public class LogAccu {
     public static final LogAccu INSTANCE = new LogAccu();
@@ -21,7 +21,7 @@ public class LogAccu {
 
     public static void err(Throwable t) {
         Throwable tt = t;
-        while (tt.getCause() != null && tt.getCause() != tt && (tt instanceof ProblemInFutureCalculation || tt instanceof ExecutionException || tt instanceof RuntimeException)) {
+        while (tt.getCause() != null && tt.getCause() != tt && (tt instanceof Wrapper || tt instanceof ExecutionException)) {
             tt = tt.getCause();
         }
         err("PROBLEM: " + tt.getClass().getSimpleName() + ": " + tt.getMessage());

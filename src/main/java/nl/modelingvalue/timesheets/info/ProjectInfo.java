@@ -30,6 +30,7 @@ import de.micromata.jira.rest.core.jql.JqlBuilder.JqlKeyword;
 import de.micromata.jira.rest.core.jql.JqlSearchBean;
 import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.util.FatalException;
 import nl.modelingvalue.timesheets.util.LogAccu;
 import nl.modelingvalue.timesheets.util.U;
 import nl.modelingvalue.timesheets.util.Yielder;
@@ -134,7 +135,7 @@ public class ProjectInfo extends PGInfo {
             WorklogBean                    worklogBean   = waitFor(worklogFuture);
             List<WorkEntryBean>            worklogs      = worklogBean.getWorklogs();
             if (worklogBean.getMaxResults() < worklogBean.getTotal()) {
-                throw new Error("did not get all worklogs!!!");
+                throw new FatalException("did not get all worklogs (got " + worklogBean.getMaxResults() + " while total is " + worklogBean.getTotal() + ")");
             }
             if (Config.CURRENT_YEAR_ONLY) {
                 worklogs.removeIf(web -> web.getStartedDate().getYear() < LocalDate.now().getYear());

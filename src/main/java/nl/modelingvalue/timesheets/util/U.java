@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import de.micromata.jira.rest.core.util.Wrapper;
+
 @SuppressWarnings("SameParameterValue")
 public class U {
     public static Pattern cachePattern(String s) {
@@ -36,11 +38,11 @@ public class U {
         try {
             InputStream stream = PageEncryptWrapper.class.getResourceAsStream(name);
             if (stream == null) {
-                throw new Error("resource '" + name + "' not found");
+                throw new FatalException("resource '" + name + "' not found");
             }
             return readInputStreamAsString(stream);
         } catch (IOException e) {
-            throw new Error("could not read resource '" + name + "'", e);
+            throw new Wrapper("could not read resource '" + name + "'", e);
         }
     }
 
@@ -54,13 +56,6 @@ public class U {
             result = bis.read();
         }
         return buf.toString();
-    }
-
-    public static <T> T errorIfNull(T o, String role, String name) {
-        if (o == null) {
-            throw new Error("can not find " + role + " with name " + name);
-        }
-        return o;
     }
 
     public static Stream<Path> selectJsonFiles(Path fd, Pattern defaultNamePat) {
@@ -101,7 +96,7 @@ public class U {
             Files.writeString(file, filtered);
             return crc(filtered);
         } catch (IOException e) {
-            throw new Error(e);
+            throw new Wrapper(e);
         }
     }
 
@@ -123,7 +118,7 @@ public class U {
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
-            throw new Error(e);
+            throw new Wrapper(e);
         }
     }
 

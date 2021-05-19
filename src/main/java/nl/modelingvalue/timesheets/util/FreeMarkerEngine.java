@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
+import de.micromata.jira.rest.core.util.Wrapper;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
@@ -31,7 +32,7 @@ public class FreeMarkerEngine {
             template.process(model, stringWriter);
             return stringWriter.toString();
         } catch (IOException | TemplateException e) {
-            throw new RuntimeException(e);
+            throw new Wrapper(e);
         }
     }
 }

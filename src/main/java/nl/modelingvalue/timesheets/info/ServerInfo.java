@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 
 import de.micromata.jira.rest.JiraRestClient;
 import de.micromata.jira.rest.core.domain.ProjectBean;
+import de.micromata.jira.rest.core.util.Wrapper;
+import nl.modelingvalue.timesheets.util.FatalException;
 import nl.modelingvalue.timesheets.util.Yielder;
 
 public class ServerInfo extends Info {
@@ -58,13 +60,12 @@ public class ServerInfo extends Info {
                 final JiraRestClient jiraRestClient = new JiraRestClient(POOL);
                 int                  response       = jiraRestClient.connect(new URI(url), username, apiToken);
                 if (response != 200) {
-                    debug("### connect to " + id + " failed (" + response + ")");
-                    throw new Error("could not connect: response=" + response);
+                    throw new FatalException("could not connect to " + id + ": response=" + response);
                 }
                 setJiraRestClient(jiraRestClient);
                 setProjects(getProjectsStream().toList());
             } catch (IOException | URISyntaxException | ExecutionException | InterruptedException e) {
-                throw new Error("could not connect to " + url, e);
+                throw new Wrapper("could not connect to " + url, e);
             }
         }
         trace(String.format("%6d ms to connect to %s", currentTimeMillis() - t0, id));
