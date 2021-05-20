@@ -47,38 +47,37 @@ public class MonthModel extends Model<UserModel> {
     }
 
     public String getUrl() {
-        List<ProjectInfo> projectInfos = allProjectsOfMostFrequentJiraServer();
-        if (projectInfos.isEmpty()) {
-            return null;
-        }
-        LocalDate firstDay  = LocalDate.of(year, month, 1);
-        LocalDate lastDay   = firstDay.plusMonths(1).minusDays(1);
-        String    root      = projectInfos.get(0).serverInfo.url;
-        String    user      = parentModel.getName().toLowerCase();
-        String    startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));  // should be dd/MMM/yy
-        String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
+        return parentModel.parentModel.pgInfo.serverUrlForAllProjects()
+                .map(url -> {
+                    LocalDate firstDay  = LocalDate.of(year, month, 1);
+                    LocalDate lastDay   = firstDay.plusMonths(1).minusDays(1);
+                    String    user      = parentModel.getName().toLowerCase();
+                    String    startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));  // should be dd/MMM/yy
+                    String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
 
-        UrlBuilder b = new UrlBuilder(root + "/secure/ConfigureReport.jspa");
-        b.append("reportKey", "jira-timesheet-plugin:report");
-        b.append("startDate", startDate);
-        b.append("endDate", endDate);
-        b.append("targetUser", user);
-        projectInfos.forEach(pi -> b.append("projectid", pi.projectBean.getId()));
-        b.append("targetGroup", "");
-        b.append("excludeTargetGroup", "");
-        b.append("projectRoleId", "");
-        b.append("filterid", "");
-        b.append("priority", "");
-        b.append("commentfirstword", "");
-        b.append("weekends", "true");
-        b.append("sum", "day");
-        b.append("groupByField", "");
-        b.append("moreFields", "");
-        b.append("sortBy", "");
-        b.append("sortDir", "ASC");
-        b.append("Next", "Next");
+                    UrlBuilder b = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
+                    b.append("reportKey", "jira-timesheet-plugin:report");
+                    b.append("startDate", startDate);
+                    b.append("endDate", endDate);
+                    b.append("targetUser", user);
+                    parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getId()).sorted().distinct().forEach(id -> b.append("projectid", id));
+                    b.append("targetGroup", "");
+                    b.append("excludeTargetGroup", "");
+                    b.append("projectRoleId", "");
+                    b.append("filterid", "");
+                    b.append("priority", "");
+                    b.append("commentfirstword", "");
+                    b.append("weekends", "true");
+                    b.append("sum", "day");
+                    b.append("groupByField", "");
+                    b.append("moreFields", "");
+                    b.append("sortBy", "");
+                    b.append("sortDir", "ASC");
+                    b.append("Next", "Next");
 
-        return b.toString();
+                    return b.toString();
+                })
+                .orElse(null);
     }
 
     private List<ProjectInfo> allProjectsOfMostFrequentJiraServer() {

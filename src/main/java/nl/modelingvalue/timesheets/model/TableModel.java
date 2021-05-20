@@ -3,7 +3,6 @@ package nl.modelingvalue.timesheets.model;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.ToLongFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -39,16 +38,12 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getWriteTimeUrl() {
-        Optional<ProjectInfo> activeProjectOpt = pgInfo.allProjectInfosDeep().filter(pi -> pi.serverInfo != null).findFirst();
-        if (activeProjectOpt.isEmpty()) {
-            return Config.NOT_YET_IMPLEMENTED_URL;
-        } else {
-            String       url          = activeProjectOpt.get().serverInfo.url;
-            List<String> projectKeys  = pgInfo.allProjectInfosDeep().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).toList();
+        return pgInfo.serverUrlForAllProjects().map(url -> {
+            List<String> projectKeys  = pgInfo.allProjectInfosDeep().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).sorted().distinct().toList();
             List<String> statusValues = List.of("In Progress", "In Review");
             String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
             return url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-        }
+        }).orElse(Config.NOT_YET_IMPLEMENTED_URL);
     }
 
     public List<UserModel> getUsers() {

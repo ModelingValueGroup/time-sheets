@@ -11,6 +11,7 @@ import static nl.modelingvalue.timesheets.Config.RAW_DIRNAME;
 import static nl.modelingvalue.timesheets.Config.SUPPORT_FILES;
 import static nl.modelingvalue.timesheets.Config.TIME_SHEET_FILENAME_TEMPLATE;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
+import static nl.modelingvalue.timesheets.util.LogAccu.info;
 import static nl.modelingvalue.timesheets.util.LogAccu.trace;
 import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
 
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -94,6 +96,14 @@ public class SheetMaker {
 
     public void connectAndAskProjects() {
         parallelExecAndWait(servers.values().stream(), ServerInfo::connectAndAskProjects);
+        info("projects found:");
+        servers.values()
+                .stream()
+                .sorted(Comparator.comparing(si -> si.id))
+                .forEach(si -> si.getProjectList()
+                        .stream()
+                        .sorted(Comparator.comparing(ProjectBean::getKey))
+                        .forEach(pb -> info(String.format("    %-12s  %-6s  %-6s  '%s'", si.id, pb.getKey(), pb.getId(), pb.getName()))));
     }
 
     private List<ProjectBean> getAllProjectBeans() {

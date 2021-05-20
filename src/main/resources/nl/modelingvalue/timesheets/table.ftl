@@ -1,6 +1,5 @@
-<#--noinspection CssUnusedSymbol-->
-
 <#macro table model main>
+<#-- @ftlvariable name="model" type="nl.modelingvalue.timesheets.model.TableModel" -->
     <table cellspacing="0">
         <tr>
             <#if main==1>

@@ -2,6 +2,9 @@ package nl.modelingvalue.timesheets.info;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import nl.modelingvalue.timesheets.SheetMaker;
@@ -44,5 +47,10 @@ public abstract class PGInfo extends Info {
 
     public Stream<PersonInfo> getTeamStream() {
         return team == null ? Stream.empty() : getTeamInfo().getTeamStream();
+    }
+
+    public Optional<String> serverUrlForAllProjects() {
+        Set<String> urls = allProjectInfosDeep().filter(pi -> pi.serverInfo != null).map(pi -> pi.serverInfo.url).collect(Collectors.toSet());
+        return urls.size() != 1 ? Optional.empty() : Optional.of(urls.iterator().next());
     }
 }
