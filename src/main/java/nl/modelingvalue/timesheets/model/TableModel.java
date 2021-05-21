@@ -43,7 +43,7 @@ public class TableModel extends Model<PageModel> {
             List<String> statusValues = List.of("In Progress", "In Review");
             String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
             return url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-        }).orElse(Config.NOT_YET_IMPLEMENTED_URL);
+        }).orElse(Config.UNDER_CONSTRUCTION_JPG);
     }
 
     public List<UserModel> getUsers() {
@@ -94,7 +94,7 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getUrl() {
-        return Config.NOT_YET_IMPLEMENTED_URL;
+        return Config.UNDER_CONSTRUCTION_JPG;
     }
 
     public String getPrevYear() {

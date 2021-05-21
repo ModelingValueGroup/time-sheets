@@ -17,8 +17,10 @@ public class Config {
     public static final Pattern      DEFAULT_NAME_PAT             = Pattern.compile("^time-sheets-.*.json$");
     public static final List<String> DEFAULT_DIRS                 = List.of(".", "..", System.getProperty("user.home"));
     //
-    public static final String       NOT_YET_IMPLEMENTED_URL      = "http://www.bamu-gereedschappen.nl/wp-content/uploads/2018/09/under-construction.jpg";
-    public static final List<String> SUPPORT_FILES                = List.of("styles.css", "under-construction.jpg", "scripts.js");
+    public static final String       UNDER_CONSTRUCTION_JPG       = "under-construction.jpg";
+    public static final String       STYLES_CSS                   = "styles.css";
+    public static final String       SCRIPTS_JS                   = "scripts.js";
+    public static final List<String> SUPPORT_FILES                = List.of(STYLES_CSS, UNDER_CONSTRUCTION_JPG, SCRIPTS_JS);
     public static final String[]     MONTH_NAMES                  = {
             "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"
     };

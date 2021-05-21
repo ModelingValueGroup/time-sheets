@@ -1,13 +1,13 @@
 package nl.modelingvalue.timesheets;
 
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
+import static nl.modelingvalue.timesheets.util.LogAccu.trace;
 
 public class Main {
     public static void main(String[] args) {
-        info("= TRACE_TO_STDERR   = " + Config.TRACE_TO_STDERR);
-        info("= TRACE_TO_HTML     = " + Config.TRACE_TO_HTML);
-        info("= CURRENT_YEAR_ONLY = " + Config.CURRENT_YEAR_ONLY);
+        trace("= TRACE_TO_STDERR   = " + Config.TRACE_TO_STDERR);
+        trace("= TRACE_TO_HTML     = " + Config.TRACE_TO_HTML);
+        trace("= CURRENT_YEAR_ONLY = " + Config.CURRENT_YEAR_ONLY);
 
         SheetMaker sheetMaker = SheetMaker.read(args);
         try {

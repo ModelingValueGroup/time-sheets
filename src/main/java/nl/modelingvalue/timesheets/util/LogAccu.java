@@ -18,7 +18,6 @@ public class LogAccu {
     public final List<String> trace = new ArrayList<>();
     public final List<String> debug = new ArrayList<>();
 
-
     public static void err(Throwable t) {
         Throwable tt = t;
         while (tt.getCause() != null && tt.getCause() != tt && (tt instanceof Wrapper || tt instanceof ExecutionException)) {

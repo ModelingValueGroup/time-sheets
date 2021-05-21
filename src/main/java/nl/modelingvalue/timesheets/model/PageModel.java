@@ -2,6 +2,7 @@ package nl.modelingvalue.timesheets.model;
 
 import java.util.List;
 
+import nl.modelingvalue.timesheets.Config;
 import nl.modelingvalue.timesheets.info.PGInfo;
 
 public class PageModel extends Model<PageModel> {
@@ -12,6 +13,14 @@ public class PageModel extends Model<PageModel> {
         super(null);
         this.pgInfo = pgInfo;
         this.year   = year;
+    }
+
+    public String getStylesCss() {
+        return Config.STYLES_CSS;
+    }
+
+    public String getScriptsJs() {
+        return Config.SCRIPTS_JS;
     }
 
     public String getName() {

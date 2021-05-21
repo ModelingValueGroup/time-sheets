@@ -27,6 +27,14 @@ public class IndexModel extends Model<IndexModel> {
         this.allYears   = year_name_StreamFromFiles().map(y_n -> y_n[0]).distinct().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
     }
 
+    public String getStylesCss() {
+        return Config.STYLES_CSS;
+    }
+
+    public String getScriptsJs() {
+        return Config.SCRIPTS_JS;
+    }
+
     public List<IndexGroupModel> getGroups() {
         return year_name_StreamFromFiles()
                 .collect(Collectors.groupingBy(year_name -> year_name[1]))
