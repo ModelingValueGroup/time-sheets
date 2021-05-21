@@ -23,9 +23,11 @@
         </tr>
         <tr>
             <td colspan=2 class="center">
-                <a target="_blank" href="${model.writeTimeUrl}">
-                    jira
-                </a>
+                <#if model.writeTimeUrl??>
+                    <a target="_blank" href="${model.writeTimeUrl}">
+                        jira
+                    </a>
+                </#if>
             </td>
             <#list model.months as m>
                 <td class="center wide">${m.name}</td>
