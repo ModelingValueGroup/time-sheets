@@ -55,27 +55,66 @@ public class MonthModel extends Model<UserModel> {
                     String    startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));  // should be dd/MMM/yy
                     String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
 
-                    UrlBuilder b = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
-                    b.append("reportKey", "jira-timesheet-plugin:report");
-                    b.append("startDate", startDate);
-                    b.append("endDate", endDate);
-                    b.append("targetUser", user);
-                    parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getId()).sorted().distinct().forEach(id -> b.append("projectid", id));
-                    b.append("targetGroup", "");
-                    b.append("excludeTargetGroup", "");
-                    b.append("projectRoleId", "");
-                    b.append("filterid", "");
-                    b.append("priority", "");
-                    b.append("commentfirstword", "");
-                    b.append("weekends", "true");
-                    b.append("sum", "day");
-                    b.append("groupByField", "");
-                    b.append("moreFields", "");
-                    b.append("sortBy", "");
-                    b.append("sortDir", "ASC");
-                    b.append("Next", "Next");
 
-                    return b.toString();
+                    if (url.contains(".atlassian.net/")) {
+                        // https://xxxx.atlassian.net/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!
+                        //      project.key         =   ACDS&
+                        //      user                =   6001540f1051d10075f20b72&
+                        //      startDate           =   2021-10-02&
+                        //      endDate             =   2021-10-31&
+                        //      showDetails         =   true&
+                        //      view                =   week&
+                        //      sum                 =   day
+                        UrlBuilder b = new UrlBuilder(url + "/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!");
+                        parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getKey()).sorted().distinct().forEach(key -> b.append("project.key", key));
+                        b.append("user", user);
+                        b.append("startDate", startDate);
+                        b.append("endDate", endDate);
+                        b.append("showDetails", "true");
+                        b.append("view", "week");
+                        b.append("sum", "day");
+                        return b.toString();
+                    } else {
+                        // https://xxx.other-server.com/secure/ConfigureReport.jspa?
+                        //      reportKey           =   jira-timesheet-plugin%3Areport&
+                        //      startDate           =   01%2FNov%2F20&
+                        //      endDate             =   30%2FNov%2F20&
+                        //      targetUser          =   dirk+scheele&
+                        //      projectid           =   10005&
+                        //      targetGroup         =   &
+                        //      excludeTargetGroup  =   &
+                        //      projectRoleId       =   &
+                        //      filterid            =   &
+                        //      priority            =   &
+                        //      commentfirstword    =   &
+                        //      weekends            =   true&
+                        //      sum                 =   day&
+                        //      groupByField        =   &
+                        //      moreFields          =   &
+                        //      sortBy              =   &
+                        //      sortDir             =   ASC&
+                        //      Next                =   Next
+                        UrlBuilder b = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
+                        b.append("reportKey", "jira-timesheet-plugin:report");
+                        b.append("startDate", startDate);
+                        b.append("endDate", endDate);
+                        b.append("targetUser", user);
+                        parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getId()).sorted().distinct().forEach(id -> b.append("projectid", id));
+                        b.append("targetGroup", "");
+                        b.append("excludeTargetGroup", "");
+                        b.append("projectRoleId", "");
+                        b.append("filterid", "");
+                        b.append("priority", "");
+                        b.append("commentfirstword", "");
+                        b.append("weekends", "true");
+                        b.append("sum", "day");
+                        b.append("groupByField", "");
+                        b.append("moreFields", "");
+                        b.append("sortBy", "");
+                        b.append("sortDir", "ASC");
+                        b.append("Next", "Next");
+                        return b.toString();
+                    }
                 })
                 .orElse(null);
     }
