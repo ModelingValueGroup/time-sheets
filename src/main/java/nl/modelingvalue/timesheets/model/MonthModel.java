@@ -56,7 +56,7 @@ public class MonthModel extends Model<UserModel> {
                     String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
 
 
-                    if (url.contains(".atlassian.net/")) {
+                    if (url.contains(".atlassian.net")) {
                         // https://xxxx.atlassian.net/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!
                         //      project.key         =   ACDS&
                         //      user                =   6001540f1051d10075f20b72&
