@@ -51,9 +51,6 @@ public class MonthModel extends Model<UserModel> {
                 .map(url -> {
                     LocalDate firstDay  = LocalDate.of(year, month, 1);
                     LocalDate lastDay   = firstDay.plusMonths(1).minusDays(1);
-                    String    user      = parentModel.getName().toLowerCase();
-                    String    startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));  // should be dd/MMM/yy
-                    String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
 
 
                     if (url.contains(".atlassian.net")) {
@@ -65,6 +62,10 @@ public class MonthModel extends Model<UserModel> {
                         //      showDetails         =   true&
                         //      view                =   week&
                         //      sum                 =   day
+                        String    user      = person.id;
+                        String    startDate = firstDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
                         UrlBuilder b = new UrlBuilder(url + "/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!");
                         parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getKey()).sorted().distinct().forEach(key -> b.append("project.key", key));
                         b.append("user", user);
@@ -94,7 +95,11 @@ public class MonthModel extends Model<UserModel> {
                         //      sortBy              =   &
                         //      sortDir             =   ASC&
                         //      Next                =   Next
-                        UrlBuilder b = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
+                        String     user      = parentModel.getName().toLowerCase();
+                        String     startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
+                        String     endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
+
+                        UrlBuilder b         = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
                         b.append("reportKey", "jira-timesheet-plugin:report");
                         b.append("startDate", startDate);
                         b.append("endDate", endDate);
