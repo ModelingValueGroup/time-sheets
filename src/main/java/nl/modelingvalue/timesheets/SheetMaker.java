@@ -64,11 +64,9 @@ public class SheetMaker {
         info("projects found:");
         servers.values()
                 .stream()
-                .sorted(Comparator.comparing(si -> si.id))
-                .forEach(si -> si.getProjectList()
-                        .stream()
-                        .sorted(Comparator.comparing(ProjectBean::getKey))
-                        .forEach(pb -> info(String.format("    %-12s  %-6s  %-6s  '%s'", si.id, pb.getKey(), pb.getId(), pb.getName()))));
+                .flatMap(si -> si.getProjectList().stream().map(pb -> String.format("    %-6s %12s:%-6s  -  %s", pb.getKey(), si.id, pb.getId(), pb.getName())))
+                .sorted()
+                .forEach(LogAccu::info);
     }
 
     private List<ProjectBean> getAllProjectBeans() {
