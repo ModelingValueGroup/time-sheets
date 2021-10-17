@@ -1,30 +1,14 @@
 package nl.modelingvalue.timesheets.util;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.RecordComponent;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
-import de.micromata.jira.rest.core.util.Wrapper;
+import com.google.gson.*;
+import com.google.gson.reflect.*;
+import com.google.gson.stream.*;
+import de.micromata.jira.rest.core.util.*;
 
 /**
  * This is an implementation of a workaround for deserialisation of java 16 records by gson.

@@ -1,6 +1,6 @@
 package nl.modelingvalue.timesheets.info;
 
-import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.*;
 
 public abstract class Info implements Comparable<Info> {
     public String     id;

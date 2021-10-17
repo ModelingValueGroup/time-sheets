@@ -1,7 +1,7 @@
 package nl.modelingvalue.timesheets;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 
 public class Config {
     public static final boolean      TRACE_TO_STDERR              = Boolean.getBoolean("TRACE_TO_STDERR");

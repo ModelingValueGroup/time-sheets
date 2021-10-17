@@ -1,9 +1,9 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
+import java.util.function.*;
 
-import nl.modelingvalue.timesheets.util.U;
+import nl.modelingvalue.timesheets.util.*;
 
 public abstract class Model<P extends Model<?>> {
     public final P parentModel;

@@ -1,13 +1,9 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.*;
 
 @SuppressWarnings("FieldMayBeFinal")
 public abstract class PGInfo extends Info {
@@ -49,8 +45,8 @@ public abstract class PGInfo extends Info {
         return team == null ? Stream.empty() : getTeamInfo().getTeamStream();
     }
 
-    public Optional<String> serverUrlForAllProjects() {
-        Set<String> urls = allProjectInfosDeep().filter(pi -> pi.serverInfo != null).map(pi -> pi.serverInfo.url).collect(Collectors.toSet());
+    public Optional<ServerInfo> serverInfoForAllProjects() {
+        Set<ServerInfo> urls = allProjectInfosDeep().map(pi -> pi.serverInfo).filter(Objects::nonNull).collect(Collectors.toSet());
         return urls.size() != 1 ? Optional.empty() : Optional.of(urls.iterator().next());
     }
 }

@@ -1,27 +1,17 @@
 package nl.modelingvalue.timesheets.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.io.*;
+import java.nio.file.*;
+import java.security.*;
+import java.security.spec.*;
+import java.util.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Base64;
-import java.util.List;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import de.micromata.jira.rest.core.util.*;
 
-import de.micromata.jira.rest.core.util.Wrapper;
+import static java.nio.charset.StandardCharsets.*;
 
 public class PageEncryptWrapper {
     private static final int          LINE_LENGTH           = 128;

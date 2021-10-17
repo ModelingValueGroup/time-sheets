@@ -1,9 +1,9 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.util.List;
+import java.util.*;
 
-import nl.modelingvalue.timesheets.Config;
-import nl.modelingvalue.timesheets.info.PGInfo;
+import nl.modelingvalue.timesheets.*;
+import nl.modelingvalue.timesheets.info.*;
 
 public class PageModel extends Model<PageModel> {
     public final PGInfo pgInfo;

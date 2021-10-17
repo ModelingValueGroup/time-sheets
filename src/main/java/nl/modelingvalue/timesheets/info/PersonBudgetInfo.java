@@ -1,8 +1,8 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.stream.IntStream;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.*;
 
 public class PersonBudgetInfo extends Info {
     public double     allMonths;

@@ -1,9 +1,8 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.*;
 
 @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection", "FieldMayBeFinal"})
 public class PublishInfo extends Info {

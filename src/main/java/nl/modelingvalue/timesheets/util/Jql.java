@@ -1,7 +1,7 @@
 package nl.modelingvalue.timesheets.util;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.time.format.*;
+import java.util.*;
 
 public class Jql {
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");

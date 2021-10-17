@@ -1,18 +1,14 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.function.ToLongFunction;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.net.*;
+import java.nio.charset.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.Config;
-import nl.modelingvalue.timesheets.info.DetailInfo;
-import nl.modelingvalue.timesheets.info.PGInfo;
-import nl.modelingvalue.timesheets.info.ProjectInfo;
-import nl.modelingvalue.timesheets.util.Jql;
-import nl.modelingvalue.timesheets.util.U;
+import nl.modelingvalue.timesheets.*;
+import nl.modelingvalue.timesheets.info.*;
+import nl.modelingvalue.timesheets.util.*;
 
 @SuppressWarnings("unused")
 public class TableModel extends Model<PageModel> {
@@ -38,19 +34,19 @@ public class TableModel extends Model<PageModel> {
     }
 
     public String getWriteTimeUrl() {
-        return pgInfo.serverUrlForAllProjects().map(url -> {
+        return pgInfo.serverInfoForAllProjects().map(serverinfo -> {
             List<String> projectKeys  = pgInfo.allProjectInfosDeep().filter(pi -> pi.getProjectBean() != null).map(pi -> pi.getProjectBean().getKey()).sorted().distinct().toList();
-            List<String> statusValues = List.of("In Progress", "In Review");
+            List<String> statusValues = List.of("In Progress");
             String       query        = Jql.and(Jql.in("project", projectKeys), Jql.in("status", statusValues));
-            return url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+            return serverinfo.url + "/issues/?jql=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
         }).orElse(null);
     }
 
     public List<UserModel> getUsers() {
         return Stream.concat(
-                pgInfo.yearPersonMonthInfo.getPersonInfoStream(parentModel.year),
-                pgInfo.getTeamStream()
-        )
+                        pgInfo.yearPersonMonthInfo.getPersonInfoStream(parentModel.year),
+                        pgInfo.getTeamStream()
+                )
                 .distinct()
                 .sorted()
                 .map(pi -> new UserModel(this, pi))

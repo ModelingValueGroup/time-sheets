@@ -1,21 +1,13 @@
 package nl.modelingvalue.timesheets.info;
 
-import static java.util.Collections.emptyMap;
-import static nl.modelingvalue.timesheets.info.DetailInfo.EMPTY_DETAIL;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.ToLongFunction;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import nl.modelingvalue.timesheets.util.*;
 
-import nl.modelingvalue.timesheets.util.U;
+import static java.util.Collections.*;
+import static nl.modelingvalue.timesheets.info.DetailInfo.*;
 
 public class YearPersonMonthInfo extends Info {
     private final PersonMonthInfo               EMPTY = new PersonMonthInfo(this);

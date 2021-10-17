@@ -1,24 +1,17 @@
 package nl.modelingvalue.timesheets.util;
 
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import java.util.zip.*;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
+import de.micromata.jira.rest.core.util.*;
 
-import de.micromata.jira.rest.core.util.Wrapper;
+import static java.util.regex.Pattern.*;
+import static nl.modelingvalue.timesheets.util.LogAccu.*;
 
 @SuppressWarnings("SameParameterValue")
 public class U {

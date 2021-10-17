@@ -1,21 +1,14 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.ToLongFunction;
-import java.util.stream.Collectors;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.Map.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.info.DetailInfo;
-import nl.modelingvalue.timesheets.info.PersonInfo;
-import nl.modelingvalue.timesheets.info.ProjectInfo;
-import nl.modelingvalue.timesheets.util.UrlBuilder;
+import nl.modelingvalue.timesheets.info.*;
+import nl.modelingvalue.timesheets.util.*;
 
 @SuppressWarnings("unused")
 public class MonthModel extends Model<UserModel> {
@@ -47,27 +40,31 @@ public class MonthModel extends Model<UserModel> {
     }
 
     public String getUrl() {
-        return parentModel.parentModel.pgInfo.serverUrlForAllProjects()
-                .map(url -> {
-                    LocalDate firstDay  = LocalDate.of(year, month, 1);
-                    LocalDate lastDay   = firstDay.plusMonths(1).minusDays(1);
-
+        return parentModel.parentModel.pgInfo.serverInfoForAllProjects()
+                .map(serverInfo -> {
+                    LocalDate    firstDay = LocalDate.of(year, month, 1);
+                    LocalDate    lastDay  = firstDay.plusMonths(1).minusDays(1);
+                    String       url      = serverInfo.url;
+                    List<String> projects = parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getKey()).sorted().distinct().collect(Collectors.toList());
 
                     if (url.contains(".atlassian.net")) {
                         // https://xxxx.atlassian.net/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!
                         //      project.key         =   ACDS&
-                        //      user                =   6001540f1051d10075f20b72&
+                        //      user                =   nnnnnnnnnn&
                         //      startDate           =   2021-10-02&
                         //      endDate             =   2021-10-31&
                         //      showDetails         =   true&
                         //      view                =   week&
                         //      sum                 =   day
-                        String    user      = person.id;
-                        String    startDate = firstDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                        String    endDate   = lastDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        String user      = person.accountIdMap.get(serverInfo);
+                        String startDate = firstDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        String endDate   = lastDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        if (user == null) {
+                            LogAccu.err("can not make link to timesheet because no account id (user=" + person.fullName + " projects=" + projects + " period=[" + startDate + "..." + endDate + "]");
+                        }
 
                         UrlBuilder b = new UrlBuilder(url + "/plugins/servlet/ac/jira-timesheet-plugin/timereports-report#!");
-                        parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getKey()).sorted().distinct().forEach(key -> b.append("project.key", key));
+                        projects.forEach(key -> b.append("project.key", key));
                         b.append("user", user);
                         b.append("startDate", startDate);
                         b.append("endDate", endDate);
@@ -95,16 +92,16 @@ public class MonthModel extends Model<UserModel> {
                         //      sortBy              =   &
                         //      sortDir             =   ASC&
                         //      Next                =   Next
-                        String     user      = parentModel.getName().toLowerCase();
-                        String     startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
-                        String     endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
+                        String user      = parentModel.getName().toLowerCase();
+                        String startDate = firstDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
+                        String endDate   = lastDay.format(DateTimeFormatter.ofPattern("dd/MMM/yy"));
 
-                        UrlBuilder b         = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
+                        UrlBuilder b = new UrlBuilder(url + "/secure/ConfigureReport.jspa");
                         b.append("reportKey", "jira-timesheet-plugin:report");
                         b.append("startDate", startDate);
                         b.append("endDate", endDate);
                         b.append("targetUser", user);
-                        parentModel.parentModel.pgInfo.allProjectInfosDeep().map(pi -> pi.projectBean.getId()).sorted().distinct().forEach(id -> b.append("projectid", id));
+                        projects.forEach(id -> b.append("projectid", id));
                         b.append("targetGroup", "");
                         b.append("excludeTargetGroup", "");
                         b.append("projectRoleId", "");
@@ -125,14 +122,24 @@ public class MonthModel extends Model<UserModel> {
     }
 
     private List<ProjectInfo> allProjectsOfMostFrequentJiraServer() {
+        return getMostFrequentJiraServerEntry()
+                .map(Entry::getValue)
+                .orElse(Collections.emptyList());
+    }
+
+    private ServerInfo getMostFrequentJiraServer() {
+        return getMostFrequentJiraServerEntry()
+                .map(Entry::getKey)
+                .orElse(null);
+    }
+
+    private Optional<Entry<ServerInfo, List<ProjectInfo>>> getMostFrequentJiraServerEntry() {
         return parentModel.parentModel.pgInfo.allProjectInfosDeep()
                 .filter(pi -> pi.serverInfo != null)
                 .collect(Collectors.groupingBy(pi -> pi.serverInfo))
                 .entrySet()
                 .stream()
-                .max(Comparator.comparingInt(e -> e.getValue().size()))
-                .map(Entry::getValue)
-                .orElse(Collections.emptyList());
+                .max(Comparator.comparingInt(e -> e.getValue().size()));
     }
 
     public String getDetails() {

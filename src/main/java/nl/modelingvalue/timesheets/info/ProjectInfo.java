@@ -1,39 +1,24 @@
 package nl.modelingvalue.timesheets.info;
 
-import static de.micromata.jira.rest.core.jql.EField.AFFECTED_VERSION;
-import static de.micromata.jira.rest.core.jql.EField.PROJECT;
-import static de.micromata.jira.rest.core.jql.EOperator.EQUALS;
-import static de.micromata.jira.rest.core.jql.EOperator.GREATER_THAN_EQUALS;
-import static java.lang.System.currentTimeMillis;
-import static nl.modelingvalue.timesheets.util.Jql.DATE_FORMATTER;
-import static nl.modelingvalue.timesheets.util.LogAccu.debug;
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
+
+import de.micromata.jira.rest.client.*;
+import de.micromata.jira.rest.core.domain.*;
+import de.micromata.jira.rest.core.jql.*;
+import de.micromata.jira.rest.core.jql.JqlBuilder.*;
+import nl.modelingvalue.timesheets.*;
+import nl.modelingvalue.timesheets.util.*;
+
+import static de.micromata.jira.rest.core.jql.EField.*;
+import static de.micromata.jira.rest.core.jql.EOperator.*;
+import static java.lang.System.*;
+import static nl.modelingvalue.timesheets.util.Jql.*;
 import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.trace;
-import static nl.modelingvalue.timesheets.util.Pool.POOL;
-import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
-import static nl.modelingvalue.timesheets.util.Pool.waitFor;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
-
-import de.micromata.jira.rest.client.SearchClient;
-import de.micromata.jira.rest.core.domain.IssueBean;
-import de.micromata.jira.rest.core.domain.JqlSearchResult;
-import de.micromata.jira.rest.core.domain.ProjectBean;
-import de.micromata.jira.rest.core.domain.WorkEntryBean;
-import de.micromata.jira.rest.core.domain.WorklogBean;
-import de.micromata.jira.rest.core.jql.EField;
-import de.micromata.jira.rest.core.jql.JqlBuilder;
-import de.micromata.jira.rest.core.jql.JqlBuilder.JqlKeyword;
-import de.micromata.jira.rest.core.jql.JqlSearchBean;
-import nl.modelingvalue.timesheets.Config;
-import nl.modelingvalue.timesheets.SheetMaker;
-import nl.modelingvalue.timesheets.util.FatalException;
-import nl.modelingvalue.timesheets.util.LogAccu;
-import nl.modelingvalue.timesheets.util.U;
-import nl.modelingvalue.timesheets.util.Yielder;
+import static nl.modelingvalue.timesheets.util.LogAccu.*;
+import static nl.modelingvalue.timesheets.util.Pool.*;
 
 public class ProjectInfo extends PGInfo {
     public ProjectBean projectBean;
@@ -78,7 +63,7 @@ public class ProjectInfo extends PGInfo {
             debug(">>>>>>>>>>>> issues and worklogs   -  " + fullName());
             long t0 = currentTimeMillis();
             parallelExecAndWait(getIssuesStream(), issue -> getWorkEntries(issue).forEach(wb -> {
-                PersonInfo person = sheetMaker.findPersonOrCreate(wb.getAuthor());
+                PersonInfo person = sheetMaker.findPersonOrCreate(serverInfo, wb.getAuthor());
                 if (!person.ignore) {
                     int  year  = wb.getStartedDate().getYear();
                     int  month = wb.getStartedDate().getMonthValue();

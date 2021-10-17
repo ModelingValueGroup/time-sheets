@@ -1,8 +1,8 @@
 package nl.modelingvalue.timesheets.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.net.*;
 
-import java.net.URLEncoder;
+import static java.nio.charset.StandardCharsets.*;
 
 public class UrlBuilder {
     private final StringBuilder b = new StringBuilder();

@@ -1,25 +1,19 @@
 package nl.modelingvalue.timesheets.info;
 
-import static java.lang.System.currentTimeMillis;
-import static nl.modelingvalue.timesheets.util.LogAccu.debug;
-import static nl.modelingvalue.timesheets.util.LogAccu.trace;
-import static nl.modelingvalue.timesheets.util.Pool.POOL;
-import static nl.modelingvalue.timesheets.util.Pool.waitFor;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
+import de.micromata.jira.rest.*;
+import de.micromata.jira.rest.core.domain.*;
+import de.micromata.jira.rest.core.util.*;
+import nl.modelingvalue.timesheets.util.*;
 
-import de.micromata.jira.rest.JiraRestClient;
-import de.micromata.jira.rest.core.domain.ProjectBean;
-import de.micromata.jira.rest.core.util.Wrapper;
-import nl.modelingvalue.timesheets.util.FatalException;
-import nl.modelingvalue.timesheets.util.Yielder;
+import static java.lang.System.*;
+import static nl.modelingvalue.timesheets.util.LogAccu.*;
+import static nl.modelingvalue.timesheets.util.Pool.*;
 
 public class ServerInfo extends Info {
     public  boolean           ignore;
@@ -29,8 +23,14 @@ public class ServerInfo extends Info {
     //
     private JiraRestClient    jiraRestClient;
     private List<ProjectBean> projectList = new ArrayList<>();
+    private List<AccountBean> accountList = new ArrayList<>();
 
     public ServerInfo() {
+    }
+
+    @Override
+    public String toString() {
+        return "jira@" + url;
     }
 
     public JiraRestClient getJiraRestClient() {
@@ -49,7 +49,15 @@ public class ServerInfo extends Info {
         this.projectList = projectList;
     }
 
-    public void connectAndAskProjects() {
+    public List<AccountBean> getUserList() {
+        return accountList;
+    }
+
+    private void setUserList(List<AccountBean> accountList) {
+        this.accountList = accountList;
+    }
+
+    public void connectAndAskInfo() {
         debug(">>> connect to " + id);
         long t0 = System.currentTimeMillis();
         if (ignore) {
@@ -63,6 +71,9 @@ public class ServerInfo extends Info {
                 }
                 setJiraRestClient(jiraRestClient);
                 setProjects(getProjectsStream().toList());
+                if (url.contains(".atlassian.net")) {
+                    setUserList(getUsersStream().toList());
+                }
             } catch (IOException | URISyntaxException | ExecutionException | InterruptedException e) {
                 throw new Wrapper("could not connect to " + url, e);
             }
@@ -82,6 +93,20 @@ public class ServerInfo extends Info {
             yielder.yieldz(projectBeans);
             trace(String.format("%6d ms to download projects for %s", currentTimeMillis() - t0, id));
             debug("<<<<<< projects of " + id);
+        });
+    }
+
+    private Stream<AccountBean> getUsersStream() {
+        return Yielder.stream(POOL, yielder -> {
+            debug(">>>>>> users of " + id);
+            long t0 = System.currentTimeMillis();
+
+            CompletableFuture<List<AccountBean>> allUsersFuture = getJiraRestClient().getUserClient().getAllUsers(0, 1000);
+            List<AccountBean>                    usersBeans     = waitFor(allUsersFuture);
+            debug("       ... found " + usersBeans.size() + " users in " + id + ": " + usersBeans.stream().map(UserBean::getDisplayName).toList());
+            yielder.yieldz(usersBeans);
+            trace(String.format("%6d ms to download users for %s", currentTimeMillis() - t0, id));
+            debug("<<<<<< users of " + id);
         });
     }
 }

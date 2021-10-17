@@ -1,17 +1,11 @@
 package nl.modelingvalue.timesheets.util;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.io.*;
+import java.nio.charset.*;
+import java.time.*;
 
-import de.micromata.jira.rest.core.util.Wrapper;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapperBuilder;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
-import freemarker.template.Version;
+import de.micromata.jira.rest.core.util.*;
+import freemarker.template.*;
 
 public class FreeMarkerEngine {
     public static final LocalDateTime NOW           = LocalDateTime.now();

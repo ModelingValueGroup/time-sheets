@@ -1,7 +1,6 @@
 package nl.modelingvalue.timesheets;
 
-import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.trace;
+import static nl.modelingvalue.timesheets.util.LogAccu.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,8 +11,9 @@ public class Main {
         SheetMaker sheetMaker = SheetMaker.read(args);
         try {
             sheetMaker.init();
-            sheetMaker.connectAndAskProjects();
+            sheetMaker.connectAndAskInfo();
             sheetMaker.resolveProjects();
+            sheetMaker.resolveUsers();
             sheetMaker.checkProjectConsistency();
             sheetMaker.downloadAllWorkItems();
             sheetMaker.generateSupportFiles();

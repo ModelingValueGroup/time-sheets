@@ -1,59 +1,24 @@
 package nl.modelingvalue.timesheets;
 
-import static nl.modelingvalue.timesheets.Config.CURRENT_YEAR_ONLY;
-import static nl.modelingvalue.timesheets.Config.DEFAULT_DIRS;
-import static nl.modelingvalue.timesheets.Config.DEFAULT_NAME_PAT;
-import static nl.modelingvalue.timesheets.Config.INDEX_FILENAME;
-import static nl.modelingvalue.timesheets.Config.INDEX_HTML_TEMPLATE;
-import static nl.modelingvalue.timesheets.Config.PAGE_HTML_TEMPLATE;
-import static nl.modelingvalue.timesheets.Config.PUBLIC_DIRNAME;
-import static nl.modelingvalue.timesheets.Config.RAW_DIRNAME;
-import static nl.modelingvalue.timesheets.Config.SUPPORT_FILES;
-import static nl.modelingvalue.timesheets.Config.TIME_SHEET_FILENAME_TEMPLATE;
-import static nl.modelingvalue.timesheets.util.LogAccu.err;
-import static nl.modelingvalue.timesheets.util.LogAccu.info;
-import static nl.modelingvalue.timesheets.util.LogAccu.trace;
-import static nl.modelingvalue.timesheets.util.Pool.parallelExecAndWait;
+import java.io.*;
+import java.lang.reflect.*;
+import java.nio.file.*;
+import java.time.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.google.gson.reflect.*;
+import com.google.gson.stream.*;
+import de.micromata.jira.rest.core.domain.*;
+import de.micromata.jira.rest.core.util.*;
+import nl.modelingvalue.timesheets.info.*;
+import nl.modelingvalue.timesheets.model.*;
+import nl.modelingvalue.timesheets.util.*;
 
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import de.micromata.jira.rest.core.domain.AccountBean;
-import de.micromata.jira.rest.core.domain.ProjectBean;
-import de.micromata.jira.rest.core.util.Wrapper;
-import nl.modelingvalue.timesheets.info.GroupInfo;
-import nl.modelingvalue.timesheets.info.Info;
-import nl.modelingvalue.timesheets.info.PersonInfo;
-import nl.modelingvalue.timesheets.info.ProjectInfo;
-import nl.modelingvalue.timesheets.info.PublishInfo;
-import nl.modelingvalue.timesheets.info.ServerInfo;
-import nl.modelingvalue.timesheets.info.TeamInfo;
-import nl.modelingvalue.timesheets.model.IndexModel;
-import nl.modelingvalue.timesheets.model.Model;
-import nl.modelingvalue.timesheets.model.PageModel;
-import nl.modelingvalue.timesheets.util.FatalException;
-import nl.modelingvalue.timesheets.util.FreeMarkerEngine;
-import nl.modelingvalue.timesheets.util.GsonUtils;
-import nl.modelingvalue.timesheets.util.PageEncryptWrapper;
-import nl.modelingvalue.timesheets.util.Pool;
-import nl.modelingvalue.timesheets.util.U;
+import static nl.modelingvalue.timesheets.Config.*;
+import static nl.modelingvalue.timesheets.util.LogAccu.*;
+import static nl.modelingvalue.timesheets.util.Pool.*;
 
 public class SheetMaker {
     public static final Type SHEETMAKER_TYPE = new TypeToken<SheetMaker>() {
@@ -94,8 +59,8 @@ public class SheetMaker {
         publish.init(this);
     }
 
-    public void connectAndAskProjects() {
-        parallelExecAndWait(servers.values().stream(), ServerInfo::connectAndAskProjects);
+    public void connectAndAskInfo() {
+        parallelExecAndWait(servers.values().stream(), ServerInfo::connectAndAskInfo);
         info("projects found:");
         servers.values()
                 .stream()
@@ -124,6 +89,26 @@ public class SheetMaker {
         allProjectBeans.stream()
                 .filter(pb -> !matched.contains(pb))
                 .forEach(pb -> err("the project " + pb.getId() + " is not matched at all"));
+    }
+
+    public void resolveUsers() {
+        servers.values().forEach(s -> {
+            List<AccountBean> userList = s.getUserList();
+            persons.values().forEach(p -> {
+                List<AccountBean> matching = userList.stream()
+                        .filter(ab -> !ab.getAccountType().equals("app"))
+                        .filter(p::isMatch)
+                        .toList();
+                if (matching.isEmpty()) {
+                    LogAccu.debug("person " + p + " does not seem to have an account on " + s);
+                } else {
+                    p.connectAccount(s, matching.get(0));
+                    if (matching.size() != 1) {
+                        LogAccu.info("person " + p + " seems to have multiple accounts on " + s + ": " + matching);
+                    }
+                }
+            });
+        });
     }
 
     public void checkProjectConsistency() {
@@ -206,13 +191,13 @@ public class SheetMaker {
         return resolve(name, persons, "person");
     }
 
-    public PersonInfo findPersonOrCreate(AccountBean ab) {
+    public PersonInfo findPersonOrCreate(ServerInfo serverInfo, AccountBean ab) {
         List<PersonInfo> matching = persons.values().stream().filter(personInfo -> personInfo.isMatch(ab)).toList();
         return switch (matching.size()) {
             case 1 -> matching.get(0);
             case 0 -> {
                 err("account '" + ab.getDisplayName() + "' does not match any person");
-                PersonInfo newPerson = new PersonInfo(ab, this);
+                PersonInfo newPerson = new PersonInfo(serverInfo, ab, this);
                 persons.put(newPerson.id, newPerson);
                 yield newPerson;
             }

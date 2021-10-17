@@ -1,10 +1,9 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.SheetMaker;
+import nl.modelingvalue.timesheets.*;
 
 public class GroupInfo extends PGInfo {
     public  List<String> groups   = new ArrayList<>();

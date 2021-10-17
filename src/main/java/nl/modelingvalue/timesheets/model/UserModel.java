@@ -1,12 +1,11 @@
 package nl.modelingvalue.timesheets.model;
 
-import java.util.List;
-import java.util.function.ToLongFunction;
-import java.util.stream.IntStream;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import nl.modelingvalue.timesheets.info.DetailInfo;
-import nl.modelingvalue.timesheets.info.PersonInfo;
-import nl.modelingvalue.timesheets.util.U;
+import nl.modelingvalue.timesheets.info.*;
+import nl.modelingvalue.timesheets.util.*;
 
 @SuppressWarnings("unused")
 public class UserModel extends Model<TableModel> {

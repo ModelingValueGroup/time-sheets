@@ -1,9 +1,9 @@
 package nl.modelingvalue.timesheets.info;
 
-import java.util.HashMap;
+import java.util.*;
 
-import nl.modelingvalue.timesheets.SheetMaker;
-import nl.modelingvalue.timesheets.util.FatalException;
+import nl.modelingvalue.timesheets.*;
+import nl.modelingvalue.timesheets.util.*;
 
 public class YearBudgetInfo extends HashMap<String, PersonBudgetInfo> {
     public  String     id;
