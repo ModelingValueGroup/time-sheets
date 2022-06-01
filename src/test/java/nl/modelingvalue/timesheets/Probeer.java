@@ -15,7 +15,6 @@ public class Probeer {
             }
             """;
                 
-
     @Test
     public void x() {
         X x = GsonUtils.withSpecials().fromJson(TEST_JSON, X.class);
